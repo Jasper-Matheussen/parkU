@@ -3,7 +3,7 @@ import "package:flutter_map/flutter_map.dart";
 import "package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart";
 import "package:latlong2/latlong.dart";
 import 'package:location/location.dart';
-import 'package:syncfusion_flutter_maps/maps.dart';
+
 
 
 void main() => runApp(MyApp());
@@ -43,14 +43,22 @@ Future<LocationData?> _currentLocation() async {
   return await location.getLocation();
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  Set<Marker> _markers = {};
+  LatLng _markerLocation = LatLng(0, 0);
   Widget build(BuildContext context) {
     return FutureBuilder<LocationData?>(
 
         future: _currentLocation(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            _markerLocation = LatLng(snapshot.data!.latitude!, snapshot.data!.longitude!);
             return Scaffold(
               appBar: AppBar(
                 title: const Text("ParkU"),
@@ -60,6 +68,22 @@ class HomeScreen extends StatelessWidget {
                   children: <Widget>[
                     FlutterMap(
                       options: MapOptions(
+                        onPointerUp: (event, latlng) {
+                          //move the marker to the new location
+                          _markerLocation = latlng;
+                          Marker newMarker = Marker(
+                            width: 80.0,
+                            height: 80.0,
+                            point: _markerLocation,
+                            builder: (ctx) => const Icon(Icons.location_on),
+                          );
+                          setState(() {
+                            _markerLocation = latlng;
+                            _markers.clear();
+                            _markers.add(newMarker);
+                          });
+                          print(latlng);
+                        },
                         center: LatLng(snapshot.data!.latitude!, snapshot.data!.longitude!),
                         zoom: 18,
                       ),
@@ -80,15 +104,7 @@ class HomeScreen extends StatelessWidget {
                           fitBoundsOptions: const FitBoundsOptions(
                             padding: EdgeInsets.all(50),
                           ),
-                          markers: [
-                            Marker(
-                              width: 80.0,
-                              height: 80.0,
-                              point: LatLng(snapshot.data!.latitude!, snapshot.data!.longitude!),
-                              builder: (ctx) =>
-                              const Icon(Icons.location_on),
-                            ),
-                          ],
+                          markers: _markers.toList(),
                           polygonOptions: PolygonOptions(
                             borderColor: Colors.blueAccent,
                             color: Colors.blueAccent.withOpacity(0.3),
@@ -108,7 +124,7 @@ class HomeScreen extends StatelessWidget {
               ),
               bottomNavigationBar: BottomAppBar(
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
                     IconButton(
                       icon: const Icon(Icons.home),

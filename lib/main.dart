@@ -40,7 +40,7 @@ Future<LocationData?> _currentLocation() async {
       return null;
     }
   }
-return await location.getLocation();
+  return await location.getLocation();
 }
 
 class HomeScreen extends StatelessWidget {
@@ -52,6 +52,9 @@ class HomeScreen extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return Scaffold(
+              appBar: AppBar(
+                title: const Text("ParkU"),
+              ),
               body: Center(
                 child: Stack(
                   children: <Widget>[
@@ -83,7 +86,7 @@ class HomeScreen extends StatelessWidget {
                               height: 80.0,
                               point: LatLng(snapshot.data!.latitude!, snapshot.data!.longitude!),
                               builder: (ctx) =>
-                                  const Icon(Icons.location_on),
+                              const Icon(Icons.location_on),
                             ),
                           ],
                           polygonOptions: PolygonOptions(
@@ -100,6 +103,24 @@ class HomeScreen extends StatelessWidget {
                         )),
                       ],
                     )
+                  ],
+                ),
+              ),
+              bottomNavigationBar: BottomAppBar(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    IconButton(
+                      icon: const Icon(Icons.home),
+                      onPressed: () {
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                      },
+                    ),
+                    const Text("ParkU"),
+                    IconButton(
+                      icon: const Icon(Icons.more_vert),
+                      onPressed: () {},
+                    ),
                   ],
                 ),
               ),

@@ -3,7 +3,7 @@ import "package:flutter_map/flutter_map.dart";
 import "package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart";
 import "package:latlong2/latlong.dart";
 import 'package:location/location.dart';
-
+import 'loginPage.dart';
 
 
 void main() => runApp(MyApp());
@@ -134,8 +134,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const Text("ParkU"),
                     IconButton(
-                      icon: const Icon(Icons.more_vert),
-                      onPressed: () {},
+                      icon: const Icon(Icons.person),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginPage()),
+                        );
+                      },
                     ),
                   ],
                 ),

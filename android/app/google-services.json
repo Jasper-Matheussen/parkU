@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "219340262668",
+    "project_id": "parku-93437",
+    "storage_bucket": "parku-93437.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:219340262668:android:99e70791bad868f311cd29",
+        "android_client_info": {
+          "package_name": "com.example.parku"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "219340262668-g62p3s074jrtmpu001ufgdhpcmq34ou9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYkJcBHj3jYefs3pf0PUcsNsX1yHWYeBc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "219340262668-g62p3s074jrtmpu001ufgdhpcmq34ou9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

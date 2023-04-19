@@ -6,12 +6,14 @@ import 'package:location/location.dart';
 import 'loginPage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-
+import 'package:firebase_database/firebase_database.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(MyApp());
 }
 
@@ -61,11 +63,11 @@ class _HomeScreenState extends State<HomeScreen> {
   LatLng _markerLocation = LatLng(0, 0);
   Widget build(BuildContext context) {
     return FutureBuilder<LocationData?>(
-
         future: _currentLocation(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            _markerLocation = LatLng(snapshot.data!.latitude!, snapshot.data!.longitude!);
+            _markerLocation =
+                LatLng(snapshot.data!.latitude!, snapshot.data!.longitude!);
             return Scaffold(
               appBar: AppBar(
                 title: const Text("ParkU"),
@@ -91,7 +93,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           });
                           print(latlng);
                         },
-                        center: LatLng(snapshot.data!.latitude!, snapshot.data!.longitude!),
+                        center: LatLng(snapshot.data!.latitude!,
+                            snapshot.data!.longitude!),
                         zoom: 18,
                       ),
                       nonRotatedChildren: [
@@ -100,12 +103,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           onSourceTapped: null,
                         ),
                       ],
-                      children: <Widget> [
+                      children: <Widget>[
                         TileLayer(
-                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                           userAgentPackageName: 'com.example.app',
                         ),
-                        MarkerClusterLayerWidget(options: MarkerClusterLayerOptions(
+                        MarkerClusterLayerWidget(
+                            options: MarkerClusterLayerOptions(
                           maxClusterRadius: 120,
                           size: const Size(40, 40),
                           fitBoundsOptions: const FitBoundsOptions(
@@ -136,7 +141,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     IconButton(
                       icon: const Icon(Icons.home),
                       onPressed: () {
-                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        Navigator.of(context)
+                            .popUntil((route) => route.isFirst);
                       },
                     ),
                     const Text("ParkU"),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hash/hash.dart';
+import 'package:email_validator/email_validator.dart';
 
 /// hex encode
 String encodeHEX(List<int> bytes) {
@@ -13,6 +14,10 @@ String encodeHEX(List<int> bytes) {
     str += s.padLeft(2 - s.length, '0');
   }
   return str;
+}
+
+bool isValidEmail(String email) {
+  return EmailValidator.validate(email);
 }
 
 /// hex decode
@@ -41,7 +46,7 @@ class _SignupPageState extends State<SignupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Registratie Pagina'),
+        title: const Text('Registratie Pagina'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -50,38 +55,38 @@ class _SignupPageState extends State<SignupPage> {
           children: <Widget>[
             TextField(
               controller: usernameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Geef je gebruikersnaam',
                 labelText: 'Gebruikersnaam',
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextField(
               controller: emailController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Geef je emai',
                 labelText: 'Email',
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextField(
               obscureText: true,
               controller: passwordController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Geef je wachtwoord',
                 labelText: 'Wachtwoord',
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextField(
               obscureText: true,
               controller: confirmPasswordController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Herhaal je wachtwoord',
                 labelText: 'Herhaal wachtwoord',
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
                 // Your sign up logic her
@@ -91,8 +96,70 @@ class _SignupPageState extends State<SignupPage> {
                 String password = passwordController.text;
                 String confirmPassword = confirmPasswordController.text;
 
+                if (username.isEmpty) {
+                  // show an error message
+                  const snackBar = SnackBar(
+                    content: Text('Username cannot be empty.'),
+                    backgroundColor: Colors.red,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  return;
+                }
+                if (email.isEmpty) {
+                  // show an error message
+                  const snackBar = SnackBar(
+                    content: Text('Email cannot be empty.'),
+                    backgroundColor: Colors.red,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  return;
+                }
+                if (!isValidEmail(email)) {
+                  // show an error message
+                  const snackBar = SnackBar(
+                    content: Text('Email is not valid.'),
+                    backgroundColor: Colors.red,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  return;
+                }
+                if (password.isEmpty) {
+                  // show an error message
+                  const snackBar = SnackBar(
+                    content: Text('Password cannot be empty.'),
+                    backgroundColor: Colors.red,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  return;
+                }
+                if (confirmPassword.isEmpty) {
+                  // show an error message
+                  const snackBar = SnackBar(
+                    content: Text('Confirm password cannot be empty.'),
+                    backgroundColor: Colors.red,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  return;
+                }
+                if (password.length < 6) {
+                  // show an error message
+                  const snackBar = SnackBar(
+                    content: Text('Password must be at least 6 characters.'),
+                    backgroundColor: Colors.red,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  return;
+                }
+
                 if (password != confirmPassword) {
                   // show an error message
+                  const snackBar = SnackBar(
+                    content: Text('Passwords do not match.'),
+                    backgroundColor: Colors.red,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  passwordController.clear();
+                  confirmPasswordController.clear();
                   return;
                 }
 
@@ -117,7 +184,7 @@ class _SignupPageState extends State<SignupPage> {
                   print(e);
                 }
               },
-              child: Text('Registreer'),
+              child: const Text('Registreer'),
             ),
           ],
         ),

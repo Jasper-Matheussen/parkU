@@ -16,10 +16,6 @@ String encodeHEX(List<int> bytes) {
   return str;
 }
 
-bool isValidEmail(String email) {
-  return EmailValidator.validate(email);
-}
-
 /// hex decode
 List<int> decodeHEX(String hex) {
   var bytes = <int>[];
@@ -30,10 +26,34 @@ List<int> decodeHEX(String hex) {
   return bytes;
 }
 
+bool isValidEmail(String email) {
+  return EmailValidator.validate(email);
+}
+
 class SignupPage extends StatefulWidget {
   @override
   _SignupPageState createState() => _SignupPageState();
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  late final CollectionReference usersRef = firestore.collection('users');
+
+  Future<bool> isUsernameOrEmailAlreadyInUse(
+      String username, String email) async {
+    // Check if the username is already in use
+    QuerySnapshot usernameSnapshot =
+        await usersRef.where('username', isEqualTo: username).get();
+    if (usernameSnapshot.docs.isNotEmpty) {
+      return true;
+    }
+
+    // Check if the email is already in use
+    QuerySnapshot emailSnapshot =
+        await usersRef.where('email', isEqualTo: email).get();
+    if (emailSnapshot.docs.isNotEmpty) {
+      return true;
+    }
+
+    return false;
+  }
 }
 
 class _SignupPageState extends State<SignupPage> {
@@ -160,6 +180,16 @@ class _SignupPageState extends State<SignupPage> {
                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   passwordController.clear();
                   confirmPasswordController.clear();
+                  return;
+                }
+                if (await widget.isUsernameOrEmailAlreadyInUse(
+                    username, email)) {
+                  // show an error message
+                  const snackBar = SnackBar(
+                    content: Text('Username or email is already in use.'),
+                    backgroundColor: Colors.red,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   return;
                 }
 

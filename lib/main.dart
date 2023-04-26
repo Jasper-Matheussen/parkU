@@ -59,6 +59,40 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    super.initState();
+    for (int i = 0; i < 18; i++) {
+      _markers.add(Marker(
+        width: 80.0,
+        height: 80.0,
+        point: LatLng(51.229749, 4.41736 + i * 0.00007),
+        builder: (ctx) => const Icon(Icons.location_on),
+      ));
+      _markers.add(Marker(
+        width: 80.0,
+        height: 80.0,
+        point: LatLng(51.228982 + i * 0.000006, 4.41736 + i * 0.00007),
+        builder: (ctx) => const Icon(Icons.location_on),
+      ));
+      if (i < 10) {
+        _markers.add(Marker(
+          width: 80.0,
+          height: 80.0,
+          point: LatLng(51.229678 - i * 0.00006, 4.418661),
+          builder: (ctx) => const Icon(Icons.location_on),
+        ));
+      }
+      if (i < 12) {
+        _markers.add(Marker(
+          width: 80.0,
+          height: 80.0,
+          point: LatLng(51.229686 - i * 0.00006, 4.417269),
+          builder: (ctx) => const Icon(Icons.location_on),
+        ));
+      }
+    }
+  }
+
   Set<Marker> _markers = {};
   LatLng _markerLocation = LatLng(0, 0);
   Widget build(BuildContext context) {
@@ -88,14 +122,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                           setState(() {
                             _markerLocation = latlng;
-                            _markers.clear();
                             _markers.add(newMarker);
                           });
                           print(latlng);
                         },
-                        center: LatLng(snapshot.data!.latitude!,
-                            snapshot.data!.longitude!),
+                        center: LatLng(51.229263, 4.417997),
                         zoom: 18,
+                        maxZoom: 18.4,
+                        minZoom: 17.8,
+                        /*LatLng(latitude:51.230702, longitude:4.415594)
+js_primitives.dart:30 LatLng(latitude:51.228128, longitude:4.420529)*/
+                        maxBounds: LatLngBounds(LatLng(51.230702, 4.415594),
+                            LatLng(51.228128, 4.420529)),
                       ),
                       nonRotatedChildren: [
                         AttributionWidget.defaultWidget(
@@ -111,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         MarkerClusterLayerWidget(
                             options: MarkerClusterLayerOptions(
-                          maxClusterRadius: 120,
+                          maxClusterRadius: 10,
                           size: const Size(40, 40),
                           fitBoundsOptions: const FitBoundsOptions(
                             padding: EdgeInsets.all(50),

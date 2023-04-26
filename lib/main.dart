@@ -111,21 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: <Widget>[
                     FlutterMap(
                       options: MapOptions(
-                        onPointerUp: (event, latlng) {
-                          //move the marker to the new location
-                          _markerLocation = latlng;
-                          Marker newMarker = Marker(
-                            width: 80.0,
-                            height: 80.0,
-                            point: _markerLocation,
-                            builder: (ctx) => const Icon(Icons.location_on),
-                          );
-                          setState(() {
-                            _markerLocation = latlng;
-                            _markers.add(newMarker);
-                          });
-                          print(latlng);
-                        },
                         center: LatLng(51.229263, 4.417997),
                         zoom: 18,
                         maxZoom: 18.4,

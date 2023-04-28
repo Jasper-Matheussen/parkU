@@ -66,20 +66,51 @@ class _HomeScreenState extends State<HomeScreen> {
         width: 80.0,
         height: 80.0,
         point: LatLng(51.229749, 4.41736 + i * 0.00007),
-        builder: (ctx) => const Icon(Icons.location_on),
+        builder: (ctx) => GestureDetector(
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Marker Clicked'),
+                  content: Text('Lat: ${51.229749}, Long: ${4.41736 + i * 0.00007}'),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Close'),
+                    )
+                  ],
+                );
+              },
+            );
+          },
+          child: const Icon(Icons.location_on),
+        ),
       ));
       _markers.add(Marker(
         width: 80.0,
         height: 80.0,
         point: LatLng(51.228982 + i * 0.000006, 4.41736 + i * 0.00007),
-        builder: (ctx) => const Icon(Icons.location_on),
+        builder: (ctx) => GestureDetector(
+          onTap: () {
+            print("Marker clicked at: ${LatLng(51.228982 + i * 0.000006, 4.41736 + i * 0.00007).toString()}");
+          },
+          child: const Icon(Icons.location_on),
+        ),
       ));
       if (i < 10) {
         _markers.add(Marker(
           width: 80.0,
           height: 80.0,
           point: LatLng(51.229678 - i * 0.00006, 4.418661),
-          builder: (ctx) => const Icon(Icons.location_on),
+          builder: (ctx) => GestureDetector(
+            onTap: () {
+              print("Marker clicked at: ${LatLng(51.229678 - i * 0.00006, 4.418661).toString()}");
+            },
+            child: const Icon(Icons.location_on),
+          ),
         ));
       }
       if (i < 12) {
@@ -87,7 +118,12 @@ class _HomeScreenState extends State<HomeScreen> {
           width: 80.0,
           height: 80.0,
           point: LatLng(51.229686 - i * 0.00006, 4.417269),
-          builder: (ctx) => const Icon(Icons.location_on),
+          builder: (ctx) => GestureDetector(
+            onTap: () {
+              print("Marker clicked at: ${LatLng(51.229686 - i * 0.00006, 4.417269).toString()}");
+            },
+            child: const Icon(Icons.location_on),
+          ),
         ));
       }
     }

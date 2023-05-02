@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import "package:flutter/material.dart";
 import "package:flutter_map/flutter_map.dart";
 import "package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart";
@@ -62,71 +63,50 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     for (int i = 0; i < 18; i++) {
-      _markers.add(Marker(
-        width: 80.0,
-        height: 80.0,
-        point: LatLng(51.229749, 4.41736 + i * 0.00007),
-        builder: (ctx) => GestureDetector(
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: Text('Marker Clicked'),
-                  content: Text('Lat: ${51.229749}, Long: ${4.41736 + i * 0.00007}'),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Close'),
-                    )
-                  ],
-                );
-              },
-            );
-          },
-          child: const Icon(Icons.location_on),
-        ),
-      ));
-      _markers.add(Marker(
-        width: 80.0,
-        height: 80.0,
-        point: LatLng(51.228982 + i * 0.000006, 4.41736 + i * 0.00007),
-        builder: (ctx) => GestureDetector(
-          onTap: () {
-            print("Marker clicked at: ${LatLng(51.228982 + i * 0.000006, 4.41736 + i * 0.00007).toString()}");
-          },
-          child: const Icon(Icons.location_on),
-        ),
-      ));
-      if (i < 10) {
-        _markers.add(Marker(
-          width: 80.0,
-          height: 80.0,
-          point: LatLng(51.229678 - i * 0.00006, 4.418661),
-          builder: (ctx) => GestureDetector(
-            onTap: () {
-              print("Marker clicked at: ${LatLng(51.229678 - i * 0.00006, 4.418661).toString()}");
-            },
-            child: const Icon(Icons.location_on),
-          ),
-        ));
-      }
-      if (i < 12) {
-        _markers.add(Marker(
-          width: 80.0,
-          height: 80.0,
-          point: LatLng(51.229686 - i * 0.00006, 4.417269),
-          builder: (ctx) => GestureDetector(
-            onTap: () {
-              print("Marker clicked at: ${LatLng(51.229686 - i * 0.00006, 4.417269).toString()}");
-            },
-            child: const Icon(Icons.location_on),
-          ),
-        ));
-      }
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+      //connect to the fire base database and add markers to the database in latlng format if there are no markers
+      firestore.collection('markers').doc('marker$i').set({
+        'lat': 51.229749,
+        'lng': 4.41736 + i * 0.00007,
+      });
     }
+
+    //connect to the firestore database and add a marker tot the map for each marker in the database
+    FirebaseFirestore.instance
+        .collection('markers')
+        .get()
+        .then((QuerySnapshot querySnapshot) => {
+              querySnapshot.docs.forEach((doc) {
+                _markers.add(Marker(
+                  width: 80.0,
+                  height: 80.0,
+                  point: LatLng(doc['lat'], doc['lng']),
+                  builder: (ctx) => GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Marker Clicked'),
+                            content:
+                                Text('Lat: ${doc['lat']}, Long: ${doc['lng']}'),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Close'),
+                              )
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: const Icon(Icons.location_on),
+                  ),
+                ));
+              })
+            });
   }
 
   Set<Marker> _markers = {};

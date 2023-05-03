@@ -66,9 +66,21 @@ class _HomeScreenState extends State<HomeScreen> {
       final FirebaseFirestore firestore = FirebaseFirestore.instance;
       //connect to the fire base database and add markers to the database in latlng format if there are no markers
       firestore.collection('markers').doc('marker$i').set({
+        'status': 'free',
         'lat': 51.229749,
         'lng': 4.41736 + i * 0.00007,
+        'type': '',
+        'color': '',
       });
+      if (i == 3 || i == 4 || i == 6 || i == 7) {
+        firestore.collection('markers').doc('marker$i').set({
+          'status': 'in_use',
+          'lat': 51.229749,
+          'lng': 4.41736 + i * 0.00007,
+          'type': 'BMW',
+          'color': 'rood',
+        });
+      }
     }
 
     //connect to the firestore database and add a marker tot the map for each marker in the database
@@ -87,22 +99,35 @@ class _HomeScreenState extends State<HomeScreen> {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            title: Text('Marker Clicked'),
+                            title: const Text('Parkeer plaats'),
                             content:
-                                Text('Lat: ${doc['lat']}, Long: ${doc['lng']}'),
+                                //show the status of the marker, type of car, color of car
+                                Text('Status: ' +
+                                    doc['status'] +
+                                    '\n' +
+                                    'Merk auto: ' +
+                                    doc['type'] +
+                                    '\n' +
+                                    'kleur auto: ' +
+                                    doc['color']),
                             actions: <Widget>[
                               TextButton(
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 },
-                                child: const Text('Close'),
+                                child: const Text('Sluiten'),
                               )
                             ],
                           );
                         },
                       );
                     },
-                    child: const Icon(Icons.location_on),
+                    child: Icon(
+                      doc['status'] == 'free' ? Icons.location_on :
+                      doc['status'] == 'in_use' ? Icons.location_on : Icons.location_off,
+                      color: doc['status'] == 'free' ? Colors.green :
+                      doc['status'] == 'in_use' ? Colors.red : Colors.grey,
+                    ),
                   ),
                 ));
               })

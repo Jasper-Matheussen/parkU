@@ -6,6 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hash/hash.dart';
 import 'package:email_validator/email_validator.dart';
 
+import 'loginPage.dart';
+
 /// hex encode
 String encodeHEX(List<int> bytes) {
   var str = '';
@@ -208,7 +210,10 @@ class _SignupPageState extends State<SignupPage> {
                   });
 
                   // navigate to the next screen
-                  //Navigator.pushNamed(context, '/login');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
                 } catch (e) {
                   // handle any errors
                   print(e);

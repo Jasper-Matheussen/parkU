@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
-
+import 'storage.dart';
 import 'package:flutter/material.dart';
 import 'package:parku/main.dart';
 import 'package:parku/signupPage.dart';
@@ -93,7 +93,6 @@ class _LoginPageState extends State<LoginPage> {
                       .where('username', isEqualTo: username)
                       .where('password', isEqualTo: hashedPassword)
                       .get();
-                  print(querySnapshot.docs.isNotEmpty);
 
                   if (querySnapshot.docs.isNotEmpty) {
                     return true;
@@ -108,6 +107,8 @@ class _LoginPageState extends State<LoginPage> {
                     content: Text('Login succesvol!'),
                     backgroundColor: Colors.green,
                   );
+                  //set the logged in user
+                  loggedInUser = usernameController.text;
                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   Navigator.pop(context);
                 } else {

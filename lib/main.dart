@@ -4,10 +4,12 @@ import "package:flutter_map/flutter_map.dart";
 import "package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart";
 import "package:latlong2/latlong.dart";
 import 'package:location/location.dart';
+import 'package:parku/profilePage.dart';
 import 'loginPage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -213,12 +215,22 @@ js_primitives.dart:30 LatLng(latitude:51.228128, longitude:4.420529)*/
                     IconButton(
                       icon: const Icon(Icons.person),
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => LoginPage()),
-                        );
+                        if (loggedInUser != null) {
+                          // User is logged in, navigate to profile page
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ProfilePage()),
+                          );
+                        } else {
+                          // User is not logged in, navigate to login page
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => LoginPage()),
+                          );
+                        }
                       },
                     ),
+
                   ],
                 ),
               ),

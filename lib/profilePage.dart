@@ -27,7 +27,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final carsSnapshot = await user.docs.first.reference.collection('cars').get();
     //for each document in the collection print the data
     carsSnapshot.docs.forEach((doc) {
-      _cars.add(Car(doc['merk'], doc['kleur']));
+      _cars.add(Car(doc['merk'], doc['kleur'], doc.id));
     });
     return _cars;
   }
@@ -104,10 +104,43 @@ class _ProfilePageState extends State<ProfilePage> {
                         child: ListTile(
                           title: Text(_cars[index].merk),
                           subtitle: Text(_cars[index].kleur),
+                          trailing: IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: () {
+                              // Show a confirmation dialog and delete the car if confirmed
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: Text("Verwijder auto"),
+                                  content: Text("Weet je zeker dat je deze auto wilt verwijderen?"),
+                                  actions: [
+                                    TextButton(
+                                      child: Text("Annuleren"),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: Text("Verwijderen"),
+                                      onPressed: () {
+                                        // Delete the car and update the list
+                                        st.deleteCarForUser(_cars[index]);
+                                        setState(() {
+                                          _cars.removeAt(index);
+                                        });
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       );
                     },
                   );
+
                 } else if (snapshot.hasError) {
                   return Text("Error: ${snapshot.error}");
                 } else {

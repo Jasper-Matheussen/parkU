@@ -65,7 +65,7 @@ Future<List<Car>> getCars() async {
   final carsSnapshot = await user.docs.first.reference.collection('cars').get();
   //for each document in the collection print the data
   carsSnapshot.docs.forEach((doc) {
-    _cars.add(Car(doc['merk'], doc['kleur']));
+    _cars.add(Car(doc['merk'], doc['kleur'], doc.id));
   });
   return _cars;
 }
@@ -80,6 +80,7 @@ addMarker(BuildContext context) {
         builder: (BuildContext context, AsyncSnapshot<List<Car>> snapshot) {
           if (snapshot.hasError || !snapshot.hasData) {
             // show an error message if there was an error fetching the data
+            print(snapshot.error);
             return AlertDialog(
               title: Text('Error'),
               content: Text('Failed to load cars'),

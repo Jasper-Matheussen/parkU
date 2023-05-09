@@ -25,6 +25,15 @@ Future<void> addCarForUser(String merk, String kleur) {
   });
 }
 
+//method delete car
+Future<void> deleteCarForUser(Car car) {
+  //get the loggedInUser from firebase
+  return getLoggedInUser().then((value) {
+    final userRef = value.docs.first.reference;
+    userRef.collection('cars').doc(car.id).delete();
+  });
+}
+
 
 
 

@@ -104,8 +104,7 @@ addMarker(BuildContext context) {
             );
           } else {
             final List<Car> cars = snapshot.data ?? [];
-
-            String selectedType = cars.isEmpty ? 'no cars' : cars.first.merk;
+            String ?selectedType;
             return StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
                 return AlertDialog(
@@ -114,19 +113,23 @@ addMarker(BuildContext context) {
                     child: ListBody(
                       children: <Widget>[
                         DropdownButton<String>(
+                          key: UniqueKey(),
+                          hint: const Text('Selecteer een auto'),
                           value: selectedType,
                           onChanged: (String? newValue) {
                             setState(() {
                               selectedType = newValue!;
                             });
                           },
+
                           items: cars.map<DropdownMenuItem<String>>((Car car) {
                             return DropdownMenuItem<String>(
-                              value: car.merk,
+                              value: car.id,
                               child: Text(car.merk),
                             );
                           }).toList(),
                         ),
+
                       ],
                     ),
                   ),

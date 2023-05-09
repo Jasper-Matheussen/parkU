@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'storage.dart';
+import 'car.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -11,7 +12,11 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final String _username = loggedInUser ?? "Gebruiker";
-  List<Car> _cars = [    Car("Toyota", "Red"),    Car("Honda", "Blue"),    Car("Ford", "Green"),  ];
+  List<Car> _cars = [
+    Car("Toyota", "Red"),
+    Car("Honda", "Blue"),
+    Car("Ford", "Green"),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -133,13 +138,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-}
-
-
-class Car {
-  final String merk;
-  final String kleur;
-  Car(this.merk, this.kleur);
 }
 
 class CarFormDialog extends StatefulWidget {

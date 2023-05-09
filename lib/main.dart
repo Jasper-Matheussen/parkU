@@ -11,6 +11,8 @@ import 'firebase_options.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'storage.dart';
 
+//make an enum for the status of the marker
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -53,6 +55,10 @@ Future<LocationData?> _currentLocation() async {
     }
   }
   return await location.getLocation();
+}
+
+AddMarker() {
+  //display textfield saying "zet de marker op de paats van je parkeerplaats" and a button saying "zet marker"
 }
 
 class HomeScreen extends StatefulWidget {
@@ -125,10 +131,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                     child: Icon(
-                      doc['status'] == 'free' ? Icons.location_on :
-                      doc['status'] == 'in_use' ? Icons.location_on : Icons.location_off,
-                      color: doc['status'] == 'free' ? Colors.green :
-                      doc['status'] == 'in_use' ? Colors.red : Colors.grey,
+                      doc['status'] == 'free'
+                          ? Icons.location_on
+                          : doc['status'] == 'in_use'
+                              ? Icons.location_on
+                              : Icons.location_off,
+                      color: doc['status'] == 'free'
+                          ? Colors.green
+                          : doc['status'] == 'in_use'
+                              ? Colors.red
+                              : Colors.grey,
                     ),
                   ),
                 ));
@@ -159,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         maxZoom: 18.4,
                         minZoom: 17.8,
                         /*LatLng(latitude:51.230702, longitude:4.415594)
-js_primitives.dart:30 LatLng(latitude:51.228128, longitude:4.420529)*/
+                        js_primitives.dart:30 LatLng(latitude:51.228128, longitude:4.420529)*/
                         maxBounds: LatLngBounds(LatLng(51.230702, 4.415594),
                             LatLng(51.228128, 4.420529)),
                       ),
@@ -196,7 +208,22 @@ js_primitives.dart:30 LatLng(latitude:51.228128, longitude:4.420529)*/
                           },
                         )),
                       ],
-                    )
+                    ),
+                    //add a + icon in the bottom right corner to add a marker
+                    Positioned(
+                      bottom: 10,
+                      right: 10,
+                      child: FloatingActionButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AddMarker()),
+                          );
+                        },
+                        child: const Icon(Icons.add),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -219,18 +246,19 @@ js_primitives.dart:30 LatLng(latitude:51.228128, longitude:4.420529)*/
                           // User is logged in, navigate to profile page
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => ProfilePage()),
+                            MaterialPageRoute(
+                                builder: (context) => ProfilePage()),
                           );
                         } else {
                           // User is not logged in, navigate to login page
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => LoginPage()),
+                            MaterialPageRoute(
+                                builder: (context) => LoginPage()),
                           );
                         }
                       },
                     ),
-
                   ],
                 ),
               ),

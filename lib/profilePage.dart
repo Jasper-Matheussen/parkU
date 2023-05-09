@@ -1,6 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'storage.dart';
+import 'storage.dart' as st;
 import 'car.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -11,12 +12,26 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final String _username = loggedInUser ?? "Gebruiker";
-  List<Car> _cars = [
-    Car("Toyota", "Red"),
-    Car("Honda", "Blue"),
-    Car("Ford", "Green"),
-  ];
+  final String _username = st.loggedInUser ?? "Gebruiker";
+  List<Car> _cars = [];
+  Future<List<Car>>? _carsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _carsFuture = getCars();
+  }
+
+  Future<List<Car>> getCars() async {
+    final user = await st.getLoggedInUser();
+    final carsSnapshot = await user.docs.first.reference.collection('cars').get();
+    //for each document in the collection print the data
+    carsSnapshot.docs.forEach((doc) {
+      _cars.add(Car(doc['merk'], doc['kleur']));
+    });
+    return _cars;
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -68,15 +83,27 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           SizedBox(height: 10),
           Expanded(
-            child: ListView.builder(
-              itemCount: _cars.length,
-              itemBuilder: (BuildContext context, int index) {
-                return Card(
-                  child: ListTile(
-                    title: Text(_cars[index].merk),
-                    subtitle: Text(_cars[index].kleur),
-                  ),
-                );
+            child: _carsFuture == null ? CircularProgressIndicator() : FutureBuilder<List<Car>>(
+              future: _carsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  _cars = snapshot.data!;
+                  return ListView.builder(
+                    itemCount: _cars.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Card(
+                        child: ListTile(
+                          title: Text(_cars[index].merk),
+                          subtitle: Text(_cars[index].kleur),
+                        ),
+                      );
+                    },
+                  );
+                } else if (snapshot.hasError) {
+                  return Text("Error: ${snapshot.error}");
+                } else {
+                  return CircularProgressIndicator();
+                }
               },
             ),
           ),
@@ -242,6 +269,8 @@ class _CarFormDialogState extends State<CarFormDialog> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         // TODO: Save car data to database or other storage method
+                        // Add the car to the list
+                        st.addCarForUser(_merkController.text, _kleurController.text);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Auto toegevoegd')),
                         );

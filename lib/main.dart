@@ -11,6 +11,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'storage.dart';
+import 'storage.dart' as st;
 
 //make an enum for the status of the marker
 
@@ -58,63 +59,106 @@ Future<LocationData?> _currentLocation() async {
   return await location.getLocation();
 }
 
+Future<List<Car>> getCars() async {
+  List<Car> _cars = [];
+  final user = await st.getLoggedInUser();
+  final carsSnapshot = await user.docs.first.reference.collection('cars').get();
+  //for each document in the collection print the data
+  carsSnapshot.docs.forEach((doc) {
+    _cars.add(Car(doc['merk'], doc['kleur']));
+  });
+  return _cars;
+}
+
 addMarker(BuildContext context) {
   //display a dialog to add a marker
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      ;
-      //array of car types from database in collection user and document car
+      return FutureBuilder<List<Car>>(
+        future: getCars(),
+        builder: (BuildContext context, AsyncSnapshot<List<Car>> snapshot) {
+          if (snapshot.hasError || !snapshot.hasData) {
+            // show an error message if there was an error fetching the data
+            return AlertDialog(
+              title: Text('Error'),
+              content: Text('Failed to load cars'),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('Ok'),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            );
+          } else if (snapshot.data!.isEmpty) {
+            return AlertDialog(
+              title: Text('Error'),
+              content: Text('You have no cars'),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('Ok'),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            );
+          } else {
+            final List<Car> cars = snapshot.data ?? [];
 
-      final List<String> carTypes = ['Sedan', 'SUV', 'Truck'];
-      String selectedType = carTypes[0];
-      return AlertDialog(
-        title: const Text('Parkeer plaats toevoegen'),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
-              //textfields to add a marker
+            String selectedType = cars.isEmpty ? 'no cars' : cars.first.merk;
+            return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return AlertDialog(
+                  title: const Text('Parkeer plaats toevoegen'),
+                  content: SingleChildScrollView(
+                    child: ListBody(
+                      children: <Widget>[
+                        DropdownButton<String>(
+                          value: selectedType,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedType = newValue!;
+                            });
+                          },
+                          items: cars.map<DropdownMenuItem<String>>((Car car) {
+                            return DropdownMenuItem<String>(
+                              value: car.merk,
+                              child: Text(car.merk),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Text('Annuleren'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    TextButton(
+                      child: const Text('Toevoegen'),
+                      onPressed: () {
+                        //add the marker to the database
 
-              DropdownButton<String>(
-                value: selectedType,
-                onChanged: (String? newValue) {
-                  selectedType = newValue!;
-                },
-                items: carTypes.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Annuleren'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          TextButton(
-            child: const Text('Toevoegen'),
-            onPressed: () {
-              //add the marker to the database
-
-              FirebaseFirestore.instance
-                  .collection('markers')
-                  .doc('marker100')
-                  .set({
-                'status': 'free',
-                'lat': 3,
-                'lng': 3,
-                'car': selectedType,
-              });
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
+                        FirebaseFirestore.instance
+                            .collection('markers')
+                            .doc('marker100')
+                            .set({
+                          'status': 'free',
+                          'lat': 3,
+                          'lng': 3,
+                          'car': selectedType,
+                        });
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+        },
       );
     },
   );

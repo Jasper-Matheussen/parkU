@@ -4,6 +4,7 @@ import "package:flutter_map/flutter_map.dart";
 import "package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart";
 import "package:latlong2/latlong.dart";
 import 'package:location/location.dart';
+import 'package:parku/car.dart';
 import 'package:parku/profilePage.dart';
 import 'loginPage.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -57,8 +58,66 @@ Future<LocationData?> _currentLocation() async {
   return await location.getLocation();
 }
 
-AddMarker() {
-  //display textfield saying "zet de marker op de paats van je parkeerplaats" and a button saying "zet marker"
+addMarker(BuildContext context) {
+  //display a dialog to add a marker
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      ;
+      //array of car types from database in collection user and document car
+
+      final List<String> carTypes = ['Sedan', 'SUV', 'Truck'];
+      String selectedType = carTypes[0];
+      return AlertDialog(
+        title: const Text('Parkeer plaats toevoegen'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              //textfields to add a marker
+
+              DropdownButton<String>(
+                value: selectedType,
+                onChanged: (String? newValue) {
+                  selectedType = newValue!;
+                },
+                items: carTypes.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Annuleren'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Toevoegen'),
+            onPressed: () {
+              //add the marker to the database
+
+              FirebaseFirestore.instance
+                  .collection('markers')
+                  .doc('marker100')
+                  .set({
+                'status': 'free',
+                'lat': 3,
+                'lng': 3,
+                'car': selectedType,
+              });
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
 }
 
 class HomeScreen extends StatefulWidget {
@@ -214,14 +273,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       bottom: 10,
                       right: 10,
                       child: FloatingActionButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => AddMarker()),
-                          );
-                        },
-                        child: const Icon(Icons.add),
+                        onPressed: () => addMarker(context),
+                        tooltip: 'Voeg een nieuwe marker toe',
+                        child: Icon(Icons.add),
                       ),
                     ),
                   ],

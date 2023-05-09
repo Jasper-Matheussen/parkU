@@ -39,6 +39,15 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         title: Text('Profiel Pagina'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              st.loggedInUser = null;
+              Navigator.pop(context);
+            },
+          ),],
+
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,

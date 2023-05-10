@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:flutter_map/flutter_map.dart";
 import "package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart";
 import "package:latlong2/latlong.dart";
+import 'package:intl/intl.dart'; //for date formatting
 import 'package:location/location.dart';
 import 'package:parku/car.dart';
 import 'package:parku/profilePage.dart';
@@ -10,6 +11,7 @@ import 'loginPage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'storage.dart';
 import 'storage.dart' as st;
 
@@ -59,6 +61,7 @@ Future<LocationData?> _currentLocation() async {
   return await location.getLocation();
 }
 
+Car? selectedCar;
 Future<List<Car>> getCars() async {
   List<Car> _cars = [];
   final user = await st.getLoggedInUser();
@@ -70,6 +73,13 @@ Future<List<Car>> getCars() async {
   return _cars;
 }
 
+//get user id from firebase
+Future<String> getUserId() async {
+  final user = await st.getLoggedInUser();
+  return user.docs.first.id;
+}
+
+DateTime? selectedTime;
 addMarker(BuildContext context) {
   //display a dialog to add a marker
   showDialog(
@@ -104,7 +114,9 @@ addMarker(BuildContext context) {
             );
           } else {
             final List<Car> cars = snapshot.data ?? [];
-            String ?selectedType;
+            String? selectedType;
+
+            TextEditingController timeController = TextEditingController();
             return StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
                 return AlertDialog(
@@ -121,15 +133,34 @@ addMarker(BuildContext context) {
                               selectedType = newValue!;
                             });
                           },
-
                           items: cars.map<DropdownMenuItem<String>>((Car car) {
                             return DropdownMenuItem<String>(
                               value: car.id,
-                              child: Text(car.merk),
+                              child: Text(car.merk + ' - ' + car.kleur),
                             );
                           }).toList(),
                         ),
-
+                        //widget to slect the time
+                        TextFormField(
+                          controller: timeController,
+                          decoration: InputDecoration(
+                            labelText: 'Selecteer de tijd',
+                            suffixIcon: IconButton(
+                              icon: Icon(Icons.timer),
+                              onPressed: () {
+                                DatePicker.showTimePicker(
+                                  context,
+                                  showSecondsColumn: false,
+                                  onConfirm: (time) {
+                                    selectedTime = time;
+                                    timeController.text = DateFormat.Hm().format(
+                                        time); // use DateFormat to format the time
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -142,19 +173,41 @@ addMarker(BuildContext context) {
                     ),
                     TextButton(
                       child: const Text('Toevoegen'),
-                      onPressed: () {
-                        //add the marker to the database
-
-                        FirebaseFirestore.instance
-                            .collection('markers')
-                            .doc('marker100')
-                            .set({
-                          'status': 'free',
-                          'lat': 3,
-                          'lng': 3,
-                          'car': selectedType,
-                        });
-                        Navigator.of(context).pop();
+                      onPressed: () async {
+                        //if dropdown is empty show an error message
+                        if (selectedType == null) {
+                          //show message
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Error'),
+                                content: Text('Selecteer een auto'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: Text('Ok'),
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        } else {
+                          String userid = await getUserId();
+                          FirebaseFirestore.instance
+                              .collection('markers')
+                              .doc('marker10')
+                              .set({
+                            'status': 'in_use',
+                            'lat': 3,
+                            'lng': 3,
+                            'car': selectedType,
+                            'user': userid,
+                            'time': selectedTime.toString(),
+                          });
+                          Navigator.of(context).pop();
+                        }
                       },
                     ),
                   ],

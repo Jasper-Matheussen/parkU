@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import "package:flutter/material.dart";
 import "package:flutter_map/flutter_map.dart";
@@ -41,7 +43,7 @@ Future<LocationData?> _currentLocation() async {
   bool serviceEnabled;
   PermissionStatus permissionGranted;
 
-  Location location = new Location();
+  Location location = Location();
 
   serviceEnabled = await location.serviceEnabled();
   if (!serviceEnabled) {
@@ -80,8 +82,9 @@ Future<String> getUserId() async {
 }
 
 DateTime? selectedTime;
-addMarker(BuildContext context) {
+addMarker(BuildContext context, LatLng latLng) {
   //display a dialog to add a marker
+  print(latLng);
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -197,11 +200,11 @@ addMarker(BuildContext context) {
                           String userid = await getUserId();
                           FirebaseFirestore.instance
                               .collection('markers')
-                              .doc('marker10')
+                              .doc('marker69')
                               .set({
                             'status': 'in_use',
-                            'lat': 3,
-                            'lng': 3,
+                            'lat': latLng.latitude,
+                            'lng': latLng.longitude,
                             'car': selectedType,
                             'user': userid,
                             'time': selectedTime.toString(),
@@ -274,10 +277,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     doc['status'] +
                                     '\n' +
                                     'Merk auto: ' +
-                                    doc['type'] +
+                                    "To implement" +
                                     '\n' +
                                     'kleur auto: ' +
-                                    doc['color']),
+                                    ""
+                                        "To implement"),
                             actions: <Widget>[
                               TextButton(
                                 onPressed: () {
@@ -326,14 +330,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: <Widget>[
                     FlutterMap(
                       options: MapOptions(
+                        onLongPress: (event, latlng) {
+                          addMarker(context, latlng);
+                        },
                         center: LatLng(51.229263, 4.417997),
                         zoom: 18,
                         maxZoom: 18.4,
                         minZoom: 17.8,
-                        /*LatLng(latitude:51.230702, longitude:4.415594)
-                        js_primitives.dart:30 LatLng(latitude:51.228128, longitude:4.420529)*/
-                        maxBounds: LatLngBounds(LatLng(51.230702, 4.415594),
-                            LatLng(51.228128, 4.420529)),
+                        /*LatLng(latitude:51.230061, longitude:4.416823)
+                        LatLng(latitude:51.228677, longitude:4.419216)*/
+                        maxBounds: LatLngBounds(LatLng(51.230061, 4.416823),
+                            LatLng(51.228677, 4.419216)),
                       ),
                       nonRotatedChildren: [
                         AttributionWidget.defaultWidget(
@@ -374,7 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       bottom: 10,
                       right: 10,
                       child: FloatingActionButton(
-                        onPressed: () => addMarker(context),
+                        onPressed: () => print('Add marker pressed'),
                         tooltip: 'Voeg een nieuwe marker toe',
                         child: Icon(Icons.add),
                       ),

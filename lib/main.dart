@@ -69,7 +69,7 @@ Future<List<Car>> getCars() async {
   final carsSnapshot = await user.docs.first.reference.collection('cars').get();
   //for each document in the collection print the data
   carsSnapshot.docs.forEach((doc) {
-    _cars.add(Car(doc['merk'], doc['kleur'], doc['type'] ,doc.id));
+    _cars.add(Car(doc['merk'], doc['kleur'], doc.id, doc['type']));
   });
   return _cars;
 }
@@ -93,22 +93,34 @@ addMarker(BuildContext context, LatLng latLng) {
           if (snapshot.hasError || !snapshot.hasData) {
             // show an error message if there was an error fetching the data
             return AlertDialog(
-              title: Text('Error'),
-              content: Text('Failed to load cars'),
+              title: const Text('Error'),
+              content: const Text('Er is iets mis gegaan'),
               actions: <Widget>[
                 TextButton(
-                  child: Text('Ok'),
+                  child: const Text('Ok'),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
             );
           } else if (snapshot.data!.isEmpty) {
+            if (loggedInUser == null) {
+              return AlertDialog(
+                title: const Text('Error'),
+                content: const Text('Log in voor je een parkeerplaats kan toevoegen'),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('Ok'),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              );
+            }
             return AlertDialog(
-              title: Text('Error'),
-              content: Text('You have no cars'),
+              title: const Text('Error'),
+              content: const Text('Voeg eerst een auto toe'),
               actions: <Widget>[
                 TextButton(
-                  child: Text('Ok'),
+                  child: const Text('Ok'),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -252,26 +264,66 @@ class _HomeScreenState extends State<HomeScreen> {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            title: const Text('Parkeer plaats'),
+                            title: const Text('Parkeerplaats'),
                             content: FutureBuilder<Car>(
-                              future: getCar(
-                                  doc), // Call getCar and await the result
-                              builder: (BuildContext context,
-                                  AsyncSnapshot<Car> snapshot) {
+                              future: getCar(doc),
+                              builder: (BuildContext context, AsyncSnapshot<Car> snapshot) {
                                 if (snapshot.hasData) {
                                   Car car = snapshot.data!;
-                                  return Text('Status: ' +
-                                      doc['status'] +
-                                      '\n' +
-                                      'Merk auto: ' +
-                                      car.merk +
-                                      '\n' +
-                                      'Kleur auto: ' +
-                                      car.kleur);
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Card(
+                                        child: ListTile(
+                                          title: Text('Gereserveerd tot'),
+                                          subtitle: Text(doc['time'].substring(0, 16)),
+                                        ),
+                                      ),
+                                      Card(
+                                        child: FutureBuilder<DocumentSnapshot>(
+                                          future: FirebaseFirestore.instance.collection('users').doc(doc['user']).get(),
+                                          builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> userSnapshot) {
+                                            if (userSnapshot.connectionState == ConnectionState.waiting) {
+                                              return CircularProgressIndicator();
+                                            } else if (userSnapshot.hasData) {
+                                              String username = userSnapshot.data!['username'];
+                                              return ListTile(
+                                                title: Text('Gereserveerd door'),
+                                                subtitle: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(username),
+                                                    const Text('Rating: 4.5/5'),
+                                                  ],
+                                                ),
+                                              );
+                                            } else if (userSnapshot.hasError) {
+                                              return Text('Error: ${userSnapshot.error}');
+                                            } else {
+                                              return Text('User not found');
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                      Card(
+                                        child: ListTile(
+                                          title: Text('Merk auto'),
+                                          subtitle: Text("${car.merk} ${car.type}"),
+                                        ),
+                                      ),
+                                      Card(
+                                        child: ListTile(
+                                          title: Text('Kleur auto'),
+                                          subtitle: Text(car.kleur),
+                                        ),
+                                      ),
+                                    ],
+                                  );
                                 } else if (snapshot.hasError) {
                                   return Text('Error: ${snapshot.error}');
                                 } else {
-                                  return LinearProgressIndicator(); // Or any other loading indicator
+                                  return LinearProgressIndicator();
                                 }
                               },
                             ),
@@ -281,9 +333,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Navigator.of(context).pop();
                                 },
                                 child: const Text('Sluiten'),
-                              )
+                              ),
                             ],
                           );
+
+
                         },
                       );
                     },
@@ -318,7 +372,7 @@ class _HomeScreenState extends State<HomeScreen> {
       String kleur = documentSnapshot['kleur'];
       String type = documentSnapshot['type'];
       String id = documentSnapshot.id;
-      return Car(merk, kleur, type ,id);
+      return Car(merk, kleur, id, type);
     } else {
       throw Exception('Car not found');
     }

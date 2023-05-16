@@ -84,7 +84,6 @@ DateTime? selectedTime;
 
 addMarker(BuildContext context, LatLng latLng) {
   //display a dialog to add a marker
-  print(latLng);
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -93,7 +92,6 @@ addMarker(BuildContext context, LatLng latLng) {
         builder: (BuildContext context, AsyncSnapshot<List<Car>> snapshot) {
           if (snapshot.hasError || !snapshot.hasData) {
             // show an error message if there was an error fetching the data
-            print(snapshot.error);
             return AlertDialog(
               title: Text('Error'),
               content: Text('Failed to load cars'),

@@ -27,7 +27,6 @@ class _ProfilePageState extends State<ProfilePage> {
     final carsSnapshot = await user.docs.first.reference.collection('cars').get();
     //for each document in the collection print the data
     carsSnapshot.docs.forEach((doc) {
-      print(doc['type']);
       _cars.add(Car(doc['merk'], doc['kleur'], doc.id, doc['type']));
     });
     return _cars;
@@ -98,7 +97,6 @@ class _ProfilePageState extends State<ProfilePage> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   _cars = snapshot.data!;
-                  print(_cars[0].type);
                   return ListView.builder(
                     itemCount: _cars.length,
                     itemBuilder: (BuildContext context, int index) {

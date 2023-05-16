@@ -198,10 +198,7 @@ addMarker(BuildContext context, LatLng latLng) {
                           );
                         } else {
                           String userid = await getUserId();
-                          FirebaseFirestore.instance
-                              .collection('markers')
-                              .doc('marker69')
-                              .set({
+                          FirebaseFirestore.instance.collection('markers').add({
                             'status': 'in_use',
                             'lat': latLng.latitude,
                             'lng': latLng.longitude,
@@ -209,6 +206,7 @@ addMarker(BuildContext context, LatLng latLng) {
                             'user': userid,
                             'time': selectedTime.toString(),
                           });
+
                           Navigator.of(context).pop();
                         }
                       },

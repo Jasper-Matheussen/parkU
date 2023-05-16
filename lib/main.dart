@@ -208,6 +208,13 @@ addMarker(BuildContext context, LatLng latLng) {
                           });
 
                           Navigator.of(context).pop();
+                          //reload the page
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (BuildContext context) => HomeScreen(),
+                            ),
+                          );
                         }
                       },
                     ),

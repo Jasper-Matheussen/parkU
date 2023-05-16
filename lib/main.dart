@@ -335,8 +335,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         zoom: 18,
                         maxZoom: 18.4,
                         minZoom: 17.8,
-                        /*LatLng(latitude:51.230061, longitude:4.416823)
-                        LatLng(latitude:51.228677, longitude:4.419216)*/
                         maxBounds: LatLngBounds(LatLng(51.230061, 4.416823),
                             LatLng(51.228677, 4.419216)),
                       ),
@@ -379,7 +377,27 @@ class _HomeScreenState extends State<HomeScreen> {
                       bottom: 10,
                       right: 10,
                       child: FloatingActionButton(
-                        onPressed: () => print('Add marker pressed'),
+                        //onpressed show info dialog that they need to longpress to add a marker
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text('Marker toevoegen'),
+                                content: const Text(
+                                    'Houdt de kaart ingedrukt om een marker toe te voegen'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text('Sluiten'),
+                                  )
+                                ],
+                              );
+                            },
+                          );
+                        },
                         tooltip: 'Voeg een nieuwe marker toe',
                         child: Icon(Icons.add),
                       ),

@@ -13,7 +13,7 @@ getLoggedInUser() async {
 }
 
 //method
-Future<void> addCarForUser(String merk, String kleur) {
+Future<void> addCarForUser(String merk, String kleur, String type) {
   // Add a new document with a generated id.
   //get the loggedInUser from firebase
   return getLoggedInUser().then((value) {
@@ -21,6 +21,7 @@ Future<void> addCarForUser(String merk, String kleur) {
     userRef.collection('cars').add({
       'merk': merk,
       'kleur': kleur,
+      'type': type,
     });
   });
 }

@@ -1,19 +1,17 @@
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import "package:flutter/material.dart";
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import "package:flutter_map/flutter_map.dart";
 import "package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart";
-import "package:latlong2/latlong.dart";
 import 'package:intl/intl.dart'; //for date formatting
+import "package:latlong2/latlong.dart";
 import 'package:location/location.dart';
 import 'package:parku/car.dart';
 import 'package:parku/profilePage.dart';
-import 'loginPage.dart';
-import 'package:firebase_core/firebase_core.dart';
+
 import 'firebase_options.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'loginPage.dart';
 import 'storage.dart';
 import 'storage.dart' as st;
 
@@ -64,13 +62,14 @@ Future<LocationData?> _currentLocation() async {
 }
 
 Car? selectedCar;
+
 Future<List<Car>> getCars() async {
   List<Car> _cars = [];
   final user = await st.getLoggedInUser();
   final carsSnapshot = await user.docs.first.reference.collection('cars').get();
   //for each document in the collection print the data
   carsSnapshot.docs.forEach((doc) {
-    _cars.add(Car(doc['merk'], doc['kleur'], doc.id));
+    _cars.add(Car(doc['merk'], doc['kleur'], doc['type'] ,doc.id));
   });
   return _cars;
 }
@@ -82,6 +81,7 @@ Future<String> getUserId() async {
 }
 
 DateTime? selectedTime;
+
 addMarker(BuildContext context, LatLng latLng) {
   //display a dialog to add a marker
   print(latLng);
@@ -231,27 +231,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    for (int i = 0; i < 18; i++) {
-      final FirebaseFirestore firestore = FirebaseFirestore.instance;
-      //connect to the fire base database and add markers to the database in latlng format if there are no markers
-      firestore.collection('markers').doc('marker$i').set({
-        'status': 'free',
-        'lat': 51.229749,
-        'lng': 4.41736 + i * 0.00007,
-        'type': '',
-        'color': '',
-      });
-      if (i == 3 || i == 4 || i == 6 || i == 7) {
-        firestore.collection('markers').doc('marker$i').set({
-          'status': 'in_use',
-          'lat': 51.229749,
-          'lng': 4.41736 + i * 0.00007,
-          'type': 'BMW',
-          'color': 'rood',
-        });
-      }
-    }
-
     //connect to the firestore database and add a marker tot the map for each marker in the database
     FirebaseFirestore.instance
         .collection('markers')
@@ -269,17 +248,28 @@ class _HomeScreenState extends State<HomeScreen> {
                         builder: (BuildContext context) {
                           return AlertDialog(
                             title: const Text('Parkeer plaats'),
-                            content:
-                                //show the status of the marker, type of car, color of car
-                                Text('Status: ' +
-                                    doc['status'] +
-                                    '\n' +
-                                    'Merk auto: ' +
-                                    "To implement" +
-                                    '\n' +
-                                    'kleur auto: ' +
-                                    ""
-                                        "To implement"),
+                            content: FutureBuilder<Car>(
+                              future: getCar(
+                                  doc), // Call getCar and await the result
+                              builder: (BuildContext context,
+                                  AsyncSnapshot<Car> snapshot) {
+                                if (snapshot.hasData) {
+                                  Car car = snapshot.data!;
+                                  return Text('Status: ' +
+                                      doc['status'] +
+                                      '\n' +
+                                      'Merk auto: ' +
+                                      car.merk +
+                                      '\n' +
+                                      'Kleur auto: ' +
+                                      car.kleur);
+                                } else if (snapshot.hasError) {
+                                  return Text('Error: ${snapshot.error}');
+                                } else {
+                                  return LinearProgressIndicator(); // Or any other loading indicator
+                                }
+                              },
+                            ),
                             actions: <Widget>[
                               TextButton(
                                 onPressed: () {
@@ -310,8 +300,28 @@ class _HomeScreenState extends State<HomeScreen> {
             });
   }
 
+  Future<Car> getCar(QueryDocumentSnapshot<Object?> doc) async {
+    DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(doc['user'])
+        .collection('cars')
+        .doc(doc['car'])
+        .get();
+
+    if (documentSnapshot.exists) {
+      String merk = documentSnapshot['merk'];
+      String kleur = documentSnapshot['kleur'];
+      String type = documentSnapshot['type'];
+      String id = documentSnapshot.id;
+      return Car(merk, kleur, type ,id);
+    } else {
+      throw Exception('Car not found');
+    }
+  }
+
   Set<Marker> _markers = {};
   LatLng _markerLocation = LatLng(0, 0);
+
   Widget build(BuildContext context) {
     return FutureBuilder<LocationData?>(
         future: _currentLocation(),

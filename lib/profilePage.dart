@@ -27,7 +27,8 @@ class _ProfilePageState extends State<ProfilePage> {
     final carsSnapshot = await user.docs.first.reference.collection('cars').get();
     //for each document in the collection print the data
     carsSnapshot.docs.forEach((doc) {
-      _cars.add(Car(doc['merk'], doc['kleur'], doc.id));
+      print(doc['type']);
+      _cars.add(Car(doc['merk'], doc['kleur'], doc.id, doc['type']));
     });
     return _cars;
   }
@@ -97,12 +98,13 @@ class _ProfilePageState extends State<ProfilePage> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   _cars = snapshot.data!;
+                  print(_cars[0].type);
                   return ListView.builder(
                     itemCount: _cars.length,
                     itemBuilder: (BuildContext context, int index) {
                       return Card(
                         child: ListTile(
-                          title: Text(_cars[index].merk),
+                          title: Text("${_cars[index].merk} - ${_cars[index].type}"),
                           subtitle: Text(_cars[index].kleur),
                           trailing: IconButton(
                             icon: Icon(Icons.delete),
@@ -220,11 +222,13 @@ class _CarFormDialogState extends State<CarFormDialog> {
   final _formKey = GlobalKey<FormState>();
   final _merkController = TextEditingController();
   final _kleurController = TextEditingController();
+  final _typeController = TextEditingController();
 
   @override
   void dispose() {
     _merkController.dispose();
     _kleurController.dispose();
+    _typeController.dispose();
     super.dispose();
   }
 
@@ -288,6 +292,24 @@ class _CarFormDialogState extends State<CarFormDialog> {
                 },
               ),
               SizedBox(height: 20),
+              TextFormField(
+                controller: _typeController,
+                decoration: InputDecoration(
+                  labelText: 'Type Auto',
+                  labelStyle: TextStyle(color: Colors.grey[800]),
+                  border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blue),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Geef een type in';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -310,9 +332,8 @@ class _CarFormDialogState extends State<CarFormDialog> {
                   ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        // TODO: Save car data to database or other storage method
                         // Add the car to the list
-                        st.addCarForUser(_merkController.text, _kleurController.text);
+                        st.addCarForUser(_merkController.text, _kleurController.text, _typeController.text);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Auto toegevoegd')),
                         );

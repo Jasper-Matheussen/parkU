@@ -34,8 +34,3 @@ Future<void> deleteCarForUser(Car car) {
     userRef.collection('cars').doc(car.id).delete();
   });
 }
-
-
-
-
-

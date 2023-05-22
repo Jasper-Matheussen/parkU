@@ -255,6 +255,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     //connect to the firestore database and add a marker tot the map for each marker in the database
+    getMarkers();
+  }
+
+  void getMarkers() {
     FirebaseFirestore.instance.collection('markers').get().then((QuerySnapshot
             querySnapshot) =>
         {
@@ -373,6 +377,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       Navigator.of(context)
                                                           .pop();
                                                       //reload the page
+                                                      Navigator.pushReplacement(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (BuildContext
+                                                                  context) =>
+                                                              HomeScreen(),
+                                                        ),
+                                                      );
+                                                      getMarkers();
                                                     },
                                                     child: const Text('Ja'),
                                                   ),

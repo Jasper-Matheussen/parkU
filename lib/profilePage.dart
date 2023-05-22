@@ -92,7 +92,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           SizedBox(height: 10),
           Expanded(
-            child: _carsFuture == null ? CircularProgressIndicator() : FutureBuilder<List<Car>>(
+            child: _carsFuture == null ? const LinearProgressIndicator() : FutureBuilder<List<Car>>(
               future: _carsFuture,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
@@ -144,7 +144,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 } else if (snapshot.hasError) {
                   return Text("Error: ${snapshot.error}");
                 } else {
-                  return CircularProgressIndicator();
+                  return const LinearProgressIndicator();
                 }
               },
             ),

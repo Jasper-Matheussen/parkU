@@ -372,8 +372,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   TextButton(
                                                     onPressed: () async {
                                                       //if logedin user is null show a dialog that they need to login
-                                                      if (loggedInUser ==
-                                                          null) {
+                                                      if (loggedInUser == '') {
                                                         Navigator.of(context)
                                                             .pop();
                                                         showDialog(

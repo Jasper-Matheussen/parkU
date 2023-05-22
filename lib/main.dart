@@ -228,7 +228,14 @@ addMarker(BuildContext context, LatLng latLng) {
                             MaterialPageRoute(
                               builder: (BuildContext context) => HomeScreen(),
                             ),
-                          );
+                          ).then((_) {
+                            // Trigger a refresh after returning from the HomeScreen
+                            setState(() {
+                              // Call the necessary methods to refresh data if required
+                              _HomeScreenState().getMarkers();
+                              // Any other necessary refresh logic
+                            });
+                          });
                         }
                       },
                     ),
@@ -270,6 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (ctx) => GestureDetector(
                 onTap: () async {
                   // if the time is before the time the marker is reserved till
+
                   if (doc['status'] == 'in_use') {
                     showDialog(
                       context: context,
@@ -363,20 +371,50 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   ),
                                                   TextButton(
                                                     onPressed: () async {
-                                                      // Update the marker in the database
-                                                      FirebaseFirestore.instance
-                                                          .collection('markers')
-                                                          .doc(doc.id)
-                                                          .update({
-                                                        'status': 'reserved',
-                                                        'reserved':
-                                                            await getUserId(),
-                                                      });
-
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                      Navigator.of(context)
-                                                          .pop();
+                                                      //if logedin user is null show a dialog that they need to login
+                                                      if (loggedInUser ==
+                                                          null) {
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (BuildContext
+                                                              context) {
+                                                            return AlertDialog(
+                                                              title:
+                                                                  Text('Error'),
+                                                              content: Text(
+                                                                  'Log in voor je een parkeerplaats kan reserveren'),
+                                                              actions: <Widget>[
+                                                                TextButton(
+                                                                  child: Text(
+                                                                      'Ok'),
+                                                                  onPressed: () =>
+                                                                      Navigator.of(
+                                                                              context)
+                                                                          .pop(),
+                                                                ),
+                                                              ],
+                                                            );
+                                                          },
+                                                        );
+                                                      } else {
+                                                        // Update the marker in the database
+                                                        FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                'markers')
+                                                            .doc(doc.id)
+                                                            .update({
+                                                          'status': 'reserved',
+                                                          'reserved':
+                                                              await getUserId(),
+                                                        });
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      }
 
                                                       // Reload the page
                                                       Navigator.pushReplacement(

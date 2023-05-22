@@ -229,6 +229,7 @@ addMarker(BuildContext context, LatLng latLng) {
                               builder: (BuildContext context) => HomeScreen(),
                             ),
                           );
+
                         }
                       },
                     ),
@@ -363,32 +364,36 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   ),
                                                   TextButton(
                                                     onPressed: () async {
-                                                      //update the marker in the database
+                                                      // Update the marker in the database
                                                       FirebaseFirestore.instance
                                                           .collection('markers')
                                                           .doc(doc.id)
                                                           .update({
                                                         'status': 'reserved',
-                                                        'reserved':
-                                                            st.loggedInUser,
+                                                        'reserved': await getUserId(),
                                                       });
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                      //reload the page
+
+                                                      Navigator.of(context).pop();
+                                                      Navigator.of(context).pop();
+
+                                                      // Reload the page
                                                       Navigator.pushReplacement(
                                                         context,
                                                         MaterialPageRoute(
-                                                          builder: (BuildContext
-                                                                  context) =>
-                                                              HomeScreen(),
+                                                          builder: (BuildContext context) => HomeScreen(),
                                                         ),
-                                                      );
-                                                      getMarkers();
+                                                      ).then((_) {
+                                                        // Trigger a refresh after returning from the HomeScreen
+                                                        setState(() {
+                                                          // Call the necessary methods to refresh data if required
+                                                          getMarkers();
+                                                          // Any other necessary refresh logic
+                                                        });
+                                                      });
                                                     },
                                                     child: const Text('Ja'),
                                                   ),
+
                                                 ],
                                               );
                                             },

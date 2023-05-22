@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import "package:flutter/material.dart";
@@ -216,6 +218,7 @@ addMarker(BuildContext context, LatLng latLng) {
                             'car': selectedType,
                             'user': userid,
                             'time': selectedTime.toString(),
+                            'reserved': '',
                           });
 
                           Navigator.of(context).pop();
@@ -241,173 +244,6 @@ addMarker(BuildContext context, LatLng latLng) {
 }
 
 //do the same as addMarker but for the marker that is already in the database
-updateMarker(BuildContext context, String marker) {
-  //display a dialog to add a marker
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return FutureBuilder<List<Car>>(
-        future: getCars(),
-        builder: (BuildContext context, AsyncSnapshot<List<Car>> snapshot) {
-          if (snapshot.hasError || !snapshot.hasData) {
-            // show an error message if there was an error fetching the data
-            return AlertDialog(
-              title: const Text('Error'),
-              content: const Text('Er is iets mis gegaan'),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Ok'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            );
-          } else if (snapshot.data!.isEmpty) {
-            if (loggedInUser == null) {
-              return AlertDialog(
-                title: const Text('Error'),
-                content: const Text(
-                    'Log in voor je een parkeerplaats kan toevoegen'),
-                actions: <Widget>[
-                  TextButton(
-                    child: const Text('Ok'),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              );
-            }
-            return AlertDialog(
-              title: const Text('Error'),
-              content: const Text('Voeg eerst een auto toe'),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Ok'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            );
-          } else {
-            final List<Car> cars = snapshot.data ?? [];
-            String? selectedType;
-
-            TextEditingController timeController = TextEditingController();
-            return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-                return AlertDialog(
-                  title: const Text('Parkeer plaats toevoegen'),
-                  content: SingleChildScrollView(
-                    child: ListBody(
-                      children: <Widget>[
-                        DropdownButton<String>(
-                          key: UniqueKey(),
-                          hint: const Text('Selecteer een auto'),
-                          value: selectedType,
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              selectedType = newValue!;
-                            });
-                          },
-                          items: cars.map<DropdownMenuItem<String>>((Car car) {
-                            return DropdownMenuItem<String>(
-                              value: car.id,
-                              child: Text(car.merk + ' - ' + car.kleur),
-                            );
-                          }).toList(),
-                        ),
-                        //widget to slect the time
-                        TextFormField(
-                          controller: timeController,
-                          decoration: InputDecoration(
-                            labelText: 'Selecteer de tijd',
-                            suffixIcon: IconButton(
-                              icon: Icon(Icons.timer),
-                              onPressed: () {
-                                DatePicker.showTimePicker(
-                                  context,
-                                  showSecondsColumn: false,
-                                  onConfirm: (time) {
-                                    selectedTime = time;
-                                    timeController.text = DateFormat.Hm().format(
-                                        time); // use DateFormat to format the time
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  actions: <Widget>[
-                    TextButton(
-                      child: const Text('Annuleren'),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                    TextButton(
-                      child: const Text('Toevoegen'),
-                      onPressed: () async {
-                        //if dropdown is empty show an error message
-                        if (selectedType == null) {
-                          //show message
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text('Error'),
-                                content: Text('Selecteer een auto'),
-                                actions: <Widget>[
-                                  TextButton(
-                                    child: Text('Ok'),
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        } else {
-                          String userid = await getUserId();
-                          //get marker from database
-                          DocumentSnapshot doc = await FirebaseFirestore
-                              .instance
-                              .collection('markers')
-                              .doc(marker)
-                              .get();
-                          //update the marker in the database
-                          FirebaseFirestore.instance
-                              .collection('markers')
-                              .doc(marker)
-                              .update({
-                            'status': 'in_use',
-                            'lat': doc['lat'],
-                            'lng': doc['lng'],
-                            'car': selectedType,
-                            'user': userid,
-                            'time': selectedTime.toString(),
-                          });
-
-                          Navigator.of(context).pop();
-                          //reload the page
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (BuildContext context) => HomeScreen(),
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                );
-              },
-            );
-          }
-        },
-      );
-    },
-  );
-}
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -430,8 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (ctx) => GestureDetector(
                 onTap: () {
                   // if the time is before the time the marker is reserved till
-                  if (DateTime.now()
-                      .isBefore(DateTime.parse(doc['time']).toLocal())) {
+                  if (doc['status'] == 'in_use') {
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
@@ -449,7 +284,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   children: [
                                     Card(
                                       child: ListTile(
-                                        title: Text('Gereserveerd tot'),
+                                        title: Text('In gebruik tot'),
                                         subtitle:
                                             Text(doc['time'].substring(0, 16)),
                                       ),
@@ -470,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             String username =
                                                 userSnapshot.data!['username'];
                                             return ListTile(
-                                              title: Text('Gereserveerd door'),
+                                              title: Text('In gebruik door'),
                                               subtitle: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
@@ -502,6 +337,145 @@ class _HomeScreenState extends State<HomeScreen> {
                                         subtitle: Text(car.kleur),
                                       ),
                                     ),
+                                    //add button to reserve the marker and center the button
+
+                                    Center(
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: Text('Reserveren'),
+                                                content: Text(
+                                                    'Weet u zeker dat u deze parkeerplaats wilt reserveren?'),
+                                                actions: <Widget>[
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                    child: const Text('Nee'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () async {
+                                                      //update the marker in the database
+                                                      FirebaseFirestore.instance
+                                                          .collection('markers')
+                                                          .doc(doc.id)
+                                                          .update({
+                                                        'status': 'reserved',
+                                                        'reserved':
+                                                            st.loggedInUser,
+                                                      });
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      //reload the page
+                                                    },
+                                                    child: const Text('Ja'),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
+                                        child: Text('Reserveer'),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else {
+                                return LinearProgressIndicator();
+                              }
+                            },
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Sluiten'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else if (doc['reserved'] == st.loggedInUser) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Parkeerplaats'),
+                          content: FutureBuilder<Car>(
+                            future: getCar(doc),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<Car> snapshot) {
+                              if (snapshot.hasData) {
+                                Car car = snapshot.data!;
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Card(
+                                      child: ListTile(
+                                        title: Text('In gebruik tot'),
+                                        subtitle:
+                                            Text(doc['time'].substring(0, 16)),
+                                      ),
+                                    ),
+                                    Card(
+                                      child: FutureBuilder<DocumentSnapshot>(
+                                        future: FirebaseFirestore.instance
+                                            .collection('users')
+                                            .doc(doc['user'])
+                                            .get(),
+                                        builder: (BuildContext context,
+                                            AsyncSnapshot<DocumentSnapshot>
+                                                userSnapshot) {
+                                          if (userSnapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return CircularProgressIndicator();
+                                          } else if (userSnapshot.hasData) {
+                                            String username =
+                                                userSnapshot.data!['username'];
+                                            return ListTile(
+                                              title: Text('In gebruik door'),
+                                              subtitle: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(username),
+                                                  const Text('Rating: 4.5/5'),
+                                                ],
+                                              ),
+                                            );
+                                          } else if (userSnapshot.hasError) {
+                                            return Text(
+                                                'Error: ${userSnapshot.error}');
+                                          } else {
+                                            return Text('User not found');
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    Card(
+                                      child: ListTile(
+                                        title: Text('Merk auto'),
+                                        subtitle:
+                                            Text("${car.merk} ${car.type}"),
+                                      ),
+                                    ),
+                                    Card(
+                                      child: ListTile(
+                                        title: Text('Kleur auto'),
+                                        subtitle: Text(car.kleur),
+                                      ),
+                                    ),
+                                    //add button to reserve the marker and center the button
                                   ],
                                 );
                               } else if (snapshot.hasError) {
@@ -523,28 +497,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     );
                   } else {
-                    doc.reference.update({'status': 'free'});
-                    //show a dialog that the marker is free and that you can reserve it so in the title you have to put the time the marker is free than you have a buton to reserve it
+                    //tell user the parking is reserved
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: Text('Parkeerplaats'),
-                          content: Text(
-                              'Deze parkeerplaats is vrij, wil je deze reserveren?'),
+                          title: const Text('Parkeerplaats'),
+                          content: const Text(
+                              'Deze parkeerplaats is al gereserveerd'),
                           actions: <Widget>[
                             TextButton(
-                              child: Text('Annuleren'),
                               onPressed: () {
                                 Navigator.of(context).pop();
                               },
-                            ),
-                            TextButton(
-                              child: Text('Reserveren'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                updateMarker(context, doc.id);
-                              },
+                              child: const Text('Sluiten'),
                             ),
                           ],
                         );
@@ -553,14 +519,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 },
                 child: Icon(
-                  doc['status'] == 'free'
+                  doc['status'] == 'reserved'
                       ? Icons.location_on
                       : doc['status'] == 'in_use'
                           ? Icons.location_on
                           : Icons.location_off,
-                  color: doc['status'] == 'free'
-                      ? Colors.green
-                      : doc['status'] == 'in_use'
+                  color: doc['status'] == 'in_use'
+                      ? Colors.blue
+                      : doc['status'] == 'reserved'
                           ? Colors.red
                           : Colors.grey,
                 ),

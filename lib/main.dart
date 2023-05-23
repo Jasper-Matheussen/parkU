@@ -212,6 +212,23 @@ addMarker(BuildContext context, LatLng latLng) {
                               );
                             },
                           );
+                        } else if (selectedTime == null) {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Error'),
+                                content: Text('Selecteer een tijd'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: Text('Ok'),
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
                         } else {
                           String userid = await getUserId();
                           FirebaseFirestore.instance.collection('markers').add({

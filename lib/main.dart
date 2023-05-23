@@ -352,6 +352,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                               } else if (userSnapshot.hasData) {
                                                 String username = userSnapshot
                                                     .data!['username'];
+                                                int thumbs_up = userSnapshot
+                                                    .data!['thumbsUp'];
+                                                int thumbs_down = userSnapshot
+                                                    .data!['thumbsDown'];
                                                 return ListTile(
                                                   title:
                                                       Text('In gebruik door'),
@@ -364,10 +368,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       Row(
                                                         children: [
                                                           Icon(Icons.thumb_up),
+                                                          Text(thumbs_up
+                                                              .toString()),
+                                                          Text(" - "),
                                                           Icon(
                                                               Icons.thumb_down),
+                                                          Text(thumbs_down
+                                                              .toString()),
                                                         ],
-                                                      )
+                                                      ),
                                                     ],
                                                   ),
                                                 );
@@ -801,6 +810,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           Icon(Icons.thumb_up),
                                                           Text(thumbs_up
                                                               .toString()),
+                                                          Text(" - "),
                                                           Icon(
                                                               Icons.thumb_down),
                                                           Text(thumbs_down

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:html';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -85,56 +86,57 @@ Future<String> getUserId() async {
 DateTime? selectedTime;
 
 addMarker(BuildContext context, LatLng latLng) {
-  //display a dialog to add a marker
+  // Display a dialog to add a marker
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return FutureBuilder<List<Car>>(
-        future: getCars(),
-        builder: (BuildContext context, AsyncSnapshot<List<Car>> snapshot) {
-          if (snapshot.hasError || !snapshot.hasData) {
-            // show an error message if there was an error fetching the data
-            return AlertDialog(
-              title: const Text('Error'),
-              content: const Text('Er is iets mis gegaan'),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Ok'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            );
-          } else if (snapshot.data!.isEmpty) {
-            if (loggedInUser == null) {
-              return AlertDialog(
-                title: const Text('Error'),
-                content: const Text(
-                    'Log in voor je een parkeerplaats kan toevoegen'),
-                actions: <Widget>[
-                  TextButton(
-                    child: const Text('Ok'),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              );
-            }
-            return AlertDialog(
-              title: const Text('Error'),
-              content: const Text('Voeg eerst een auto toe'),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Ok'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            );
-          } else {
-            final List<Car> cars = snapshot.data ?? [];
-            String? selectedType;
+      String? selectedType;
+      TextEditingController timeController = TextEditingController();
+      Completer<void> completer = Completer<void>();
 
-            TextEditingController timeController = TextEditingController();
-            return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          return FutureBuilder<List<Car>>(
+            future: getCars(),
+            builder: (BuildContext context, AsyncSnapshot<List<Car>> snapshot) {
+              if (snapshot.hasError || !snapshot.hasData) {
+                // Show an error message if there was an error fetching the data
+                return AlertDialog(
+                  title: const Text('Error'),
+                  content: const Text('Er is iets mis gegaan'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Text('Ok'),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                );
+              } else if (snapshot.data!.isEmpty) {
+                if (loggedInUser == null) {
+                  return AlertDialog(
+                    title: const Text('Error'),
+                    content: const Text('Log in voor je een parkeerplaats kan toevoegen'),
+                    actions: <Widget>[
+                      TextButton(
+                        child: const Text('Ok'),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  );
+                }
+                return AlertDialog(
+                  title: const Text('Error'),
+                  content: const Text('Voeg eerst een auto toe'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Text('Ok'),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                );
+              } else {
+                final List<Car> cars = snapshot.data ?? [];
+
                 return AlertDialog(
                   title: const Text('Parkeer plaats toevoegen'),
                   content: SingleChildScrollView(
@@ -146,7 +148,7 @@ addMarker(BuildContext context, LatLng latLng) {
                           value: selectedType,
                           onChanged: (String? newValue) {
                             setState(() {
-                              selectedType = newValue!;
+                              selectedType = newValue;
                             });
                           },
                           items: cars.map<DropdownMenuItem<String>>((Car car) {
@@ -156,7 +158,7 @@ addMarker(BuildContext context, LatLng latLng) {
                             );
                           }).toList(),
                         ),
-                        //widget to slect the time
+                        // Widget to select the time
                         TextFormField(
                           controller: timeController,
                           decoration: InputDecoration(
@@ -169,8 +171,7 @@ addMarker(BuildContext context, LatLng latLng) {
                                   showSecondsColumn: false,
                                   onConfirm: (time) {
                                     selectedTime = time;
-                                    timeController.text = DateFormat.Hm().format(
-                                        time); // use DateFormat to format the time
+                                    timeController.text = DateFormat.Hm().format(time); // Use DateFormat to format the time
                                   },
                                 );
                               },
@@ -190,9 +191,9 @@ addMarker(BuildContext context, LatLng latLng) {
                     TextButton(
                       child: const Text('Toevoegen'),
                       onPressed: () async {
-                        //if dropdown is empty show an error message
+                        // If dropdown is empty, show an error message
                         if (selectedType == null) {
-                          //show message
+                          // Show message
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
@@ -202,8 +203,7 @@ addMarker(BuildContext context, LatLng latLng) {
                                 actions: <Widget>[
                                   TextButton(
                                     child: Text('Ok'),
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
+                                    onPressed: () => Navigator.of(context).pop(),
                                   ),
                                 ],
                               );
@@ -220,35 +220,33 @@ addMarker(BuildContext context, LatLng latLng) {
                             'time': selectedTime.toString(),
                             'reserved': '',
                           });
-
                           Navigator.of(context).pop();
-                          //reload the page
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (BuildContext context) => HomeScreen(),
-                            ),
-                          ).then((_) {
-                            // Trigger a refresh after returning from the HomeScreen
-                            setState(() {
-                              // Call the necessary methods to refresh data if required
-                              _HomeScreenState().getMarkers();
-                              // Any other necessary refresh logic
-                            });
-                          });
+
+                          completer.complete(); // Complete the Future
                         }
                       },
                     ),
                   ],
                 );
-              },
-            );
-          }
+              }
+            },
+          );
         },
       );
     },
-  );
+  ).then((_) {
+    // Refresh after returning from the dialog
+      //Refresh with pushreplacement
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      ).then((_) => _HomeScreenState().getMarkers());
+      // Call the necessary methods to refresh data if required
+
+  });
 }
+
+
 
 //do the same as addMarker but for the marker that is already in the database
 
@@ -272,6 +270,8 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) {
         return; // Check if the widget is still mounted before updating the state
         }
+    setState(() {
+      _markers.clear();
           querySnapshot.docs.forEach((doc) {
             _markers.add(Marker(
               width: 80.0,
@@ -419,23 +419,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         Navigator.of(context)
                                                             .pop();
                                                       }
-
-                                                      // Reload the page
-                                                      Navigator.pushReplacement(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                          builder: (BuildContext
-                                                                  context) =>
-                                                              HomeScreen(),
-                                                        ),
-                                                      ).then((_) {
-                                                        // Trigger a refresh after returning from the HomeScreen
-                                                        setState(() {
-                                                          // Call the necessary methods to refresh data if required
-                                                          getMarkers();
-                                                          // Any other necessary refresh logic
+                                                      if (!mounted) {
+                                                        return; // Check if the widget is still mounted before updating the state
+                                                      }
+                                                      if (mounted) {
+                                                         // Check if the widget is still mounted before updating the state
+                                                        // Reload the page
+                                                        Navigator.pushReplacement(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (BuildContext
+                                                            context) =>
+                                                                HomeScreen(),
+                                                          ),
+                                                        ).then((_) {
+                                                          // Trigger a refresh after returning from the HomeScreen
+                                                            // Call the necessary methods to refresh data if required
+                                                            getMarkers();
+                                                            // Any other necessary refresh logic
                                                         });
-                                                      });
+                                                      }
+
                                                     },
                                                     child: const Text('Ja'),
                                                   ),
@@ -615,8 +619,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           : Colors.grey,
                 ),
               ),
-            ));
+            ),
+            );
           });
+    });
         });
   }
 

@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'storage.dart' as st;
@@ -37,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profiel Pagina'),
+        title: const Text('Profiel Pagina'),
         centerTitle: true,
         actions: [
           IconButton(
@@ -66,7 +65,7 @@ class _ProfilePageState extends State<ProfilePage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(height: 40),
+          const SizedBox(height: 40),
           Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -74,7 +73,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 BoxShadow(
                   color: Colors.grey[300]!,
                   blurRadius: 10,
-                  offset: Offset(0, 5),
+                  offset: const Offset(0, 5),
                 ),
               ],
             ),
@@ -88,23 +87,23 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
           ),
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
           Text(
             _username,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 30),
-          Text(
+          const SizedBox(height: 30),
+          const Text(
             "Jouw auto's",
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Expanded(
             child: _carsFuture == null ? const LinearProgressIndicator() : FutureBuilder<List<Car>>(
               future: _carsFuture,
@@ -119,23 +118,23 @@ class _ProfilePageState extends State<ProfilePage> {
                           title: Text("${_cars[index].merk} - ${_cars[index].type}"),
                           subtitle: Text(_cars[index].kleur),
                           trailing: IconButton(
-                            icon: Icon(Icons.delete),
+                            icon: const Icon(Icons.delete),
                             onPressed: () {
                               // Show a confirmation dialog and delete the car if confirmed
                               showDialog(
                                 context: context,
                                 builder: (context) => AlertDialog(
-                                  title: Text("Verwijder auto"),
-                                  content: Text("Weet je zeker dat je deze auto wilt verwijderen?"),
+                                  title: const Text("Verwijder auto"),
+                                  content: const Text("Weet je zeker dat je deze auto wilt verwijderen?"),
                                   actions: [
                                     TextButton(
-                                      child: Text("Annuleren"),
+                                      child: const Text("Annuleren"),
                                       onPressed: () {
                                         Navigator.of(context).pop();
                                       },
                                     ),
                                     TextButton(
-                                      child: Text("Verwijderen"),
+                                      child: const Text("Verwijderen"),
                                       onPressed: () {
                                         // Delete the car and update the list
                                         st.deleteCarForUser(_cars[index]);
@@ -163,13 +162,13 @@ class _ProfilePageState extends State<ProfilePage> {
               },
             ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Container(
             width: 200,
             height: 50,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(25),
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [Colors.blue, Colors.lightBlueAccent],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
@@ -178,7 +177,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 BoxShadow(
                   color: Colors.blue.withOpacity(0.5),
                   blurRadius: 10,
-                  offset: Offset(0, 5),
+                  offset: const Offset(0, 5),
                 ),
               ],
             ),
@@ -187,11 +186,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 // Show the car form dialog
                 showDialog(
                   context: context,
-                  builder: (context) => CarFormDialog(),
+                  builder: (context) => const CarFormDialog(),
                 );
               },
               style: ElevatedButton.styleFrom(
-                primary: Colors.transparent,
+                backgroundColor: Colors.transparent,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
@@ -204,7 +203,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 child: Container(
                   alignment: Alignment.center,
-                  child: Text(
+                  child: const Text(
                     'Auto toevoegen',
                     style: TextStyle(
                       fontSize: 16,
@@ -216,7 +215,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
           ),
-          SizedBox(height: 50),
+          const SizedBox(height: 50),
         ],
       ),
     );
@@ -267,14 +266,14 @@ class _CarFormDialogState extends State<CarFormDialog> {
                   color: Colors.grey[800],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _merkController,
                 decoration: InputDecoration(
                   labelText: 'Merk',
                   labelStyle: TextStyle(color: Colors.grey[800]),
-                  border: OutlineInputBorder(),
-                  focusedBorder: OutlineInputBorder(
+                  border: const OutlineInputBorder(),
+                  focusedBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.blue),
                   ),
                 ),
@@ -285,14 +284,14 @@ class _CarFormDialogState extends State<CarFormDialog> {
                   return null;
                 },
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _kleurController,
                 decoration: InputDecoration(
                   labelText: 'Kleur',
                   labelStyle: TextStyle(color: Colors.grey[800]),
-                  border: OutlineInputBorder(),
-                  focusedBorder: OutlineInputBorder(
+                  border: const OutlineInputBorder(),
+                  focusedBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.blue),
                   ),
                 ),
@@ -303,14 +302,14 @@ class _CarFormDialogState extends State<CarFormDialog> {
                   return null;
                 },
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _typeController,
                 decoration: InputDecoration(
                   labelText: 'Type Auto',
                   labelStyle: TextStyle(color: Colors.grey[800]),
-                  border: OutlineInputBorder(),
-                  focusedBorder: OutlineInputBorder(
+                  border: const OutlineInputBorder(),
+                  focusedBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.blue),
                   ),
                 ),
@@ -321,7 +320,7 @@ class _CarFormDialogState extends State<CarFormDialog> {
                   return null;
                 },
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -330,35 +329,35 @@ class _CarFormDialogState extends State<CarFormDialog> {
                       Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.red,
+                      backgroundColor: Colors.red,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Annuleren',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         // Add the car to the list
                         st.addCarForUser(_merkController.text, _kleurController.text, _typeController.text);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Auto toegevoegd')),
+                          const SnackBar(content: Text('Auto toegevoegd')),
                         );
                         Navigator.of(context).pop();
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.blue,
+                      backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Toevoegen',
                       style: TextStyle(color: Colors.white),
                     ),

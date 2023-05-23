@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hash/hash.dart';
 import 'package:email_validator/email_validator.dart';
@@ -214,11 +213,10 @@ class _SignupPageState extends State<SignupPage> {
                   // navigate to the next screen
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => LoginPage()),
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
                   );
                 } catch (e) {
                   // handle any errors
-                  print(e);
                 }
               },
               child: const Text('Registreer'),

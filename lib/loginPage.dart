@@ -1,14 +1,13 @@
 import 'dart:convert';
-import 'dart:math';
 import 'storage.dart';
 import 'package:flutter/material.dart';
-import 'package:parku/main.dart';
 import 'package:parku/signupPage.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hash/hash.dart';
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -58,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
                 labelText: 'Gebruikersnaam',
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextField(
               obscureText: true,
               controller: passwordController,
@@ -67,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
                 labelText: 'Wachtwoord',
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
                 // Login
@@ -119,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                 }
               },
-              child: Text('Login'),
+              child: const Text('Login'),
             ),
             TextButton(
               onPressed: () {

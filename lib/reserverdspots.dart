@@ -55,14 +55,14 @@ class _ReservedSpotsPageState extends State<ReservedSpotsPage> {
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       // While the snapshot is loading, show a loading indicator
-                      return CircularProgressIndicator();
+                      return const CircularProgressIndicator();
                     } else if (snapshot.hasError) {
                       // If there was an error fetching the user, show an error message
                       return Text('Error: ${snapshot.error}');
                     } else if (!snapshot.hasData) {
                       // If the user data is not available, show a placeholder
                       return ListTile(
-                        title: Text('User: Loading...'),
+                        title: const Text('User: Loading...'),
                         subtitle: const Text('Status: '),
                         trailing: IconButton(
                           icon: const Icon(Icons.cancel),

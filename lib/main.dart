@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:html';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -26,13 +25,15 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: "ParkU",
       home: HomeScreen(),
     );
@@ -67,14 +68,14 @@ Future<LocationData?> _currentLocation() async {
 Car? selectedCar;
 
 Future<List<Car>> getCars() async {
-  List<Car> _cars = [];
+  List<Car> cars = [];
   final user = await st.getLoggedInUser();
   final carsSnapshot = await user.docs.first.reference.collection('cars').get();
   //for each document in the collection print the data
   carsSnapshot.docs.forEach((doc) {
-    _cars.add(Car(doc['merk'], doc['kleur'], doc.id, doc['type']));
+    cars.add(Car(doc['merk'], doc['kleur'], doc.id, doc['type']));
   });
-  return _cars;
+  return cars;
 }
 
 //get user id from firebase
@@ -155,7 +156,7 @@ addMarker(BuildContext context, LatLng latLng) {
                           items: cars.map<DropdownMenuItem<String>>((Car car) {
                             return DropdownMenuItem<String>(
                               value: car.id,
-                              child: Text(car.merk + ' - ' + car.kleur),
+                              child: Text('${car.merk} - ${car.kleur}'),
                             );
                           }).toList(),
                         ),
@@ -165,7 +166,7 @@ addMarker(BuildContext context, LatLng latLng) {
                           decoration: InputDecoration(
                             labelText: 'Selecteer de tijd',
                             suffixIcon: IconButton(
-                              icon: Icon(Icons.timer),
+                              icon: const Icon(Icons.timer),
                               onPressed: () {
                                 DatePicker.showTimePicker(
                                   context,
@@ -200,11 +201,11 @@ addMarker(BuildContext context, LatLng latLng) {
                             context: context,
                             builder: (BuildContext context) {
                               return AlertDialog(
-                                title: Text('Error'),
-                                content: Text('Selecteer een auto'),
+                                title: const Text('Error'),
+                                content: const Text('Selecteer een auto'),
                                 actions: <Widget>[
                                   TextButton(
-                                    child: Text('Ok'),
+                                    child: const Text('Ok'),
                                     onPressed: () =>
                                         Navigator.of(context).pop(),
                                   ),
@@ -217,11 +218,11 @@ addMarker(BuildContext context, LatLng latLng) {
                             context: context,
                             builder: (BuildContext context) {
                               return AlertDialog(
-                                title: Text('Error'),
-                                content: Text('Selecteer een tijd'),
+                                title: const Text('Error'),
+                                content: const Text('Selecteer een tijd'),
                                 actions: <Widget>[
                                   TextButton(
-                                    child: Text('Ok'),
+                                    child: const Text('Ok'),
                                     onPressed: () =>
                                         Navigator.of(context).pop(),
                                   ),
@@ -259,7 +260,7 @@ addMarker(BuildContext context, LatLng latLng) {
     //Refresh with pushreplacement
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
+      MaterialPageRoute(builder: (context) => const HomeScreen()),
     ).then((_) => _HomeScreenState().getMarkers());
     // Call the necessary methods to refresh data if required
   });
@@ -268,6 +269,8 @@ addMarker(BuildContext context, LatLng latLng) {
 //do the same as addMarker but for the marker that is already in the database
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -330,7 +333,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       children: [
                                         Card(
                                           child: ListTile(
-                                            title: Text('In gebruik tot'),
+                                            title: const Text('In gebruik tot'),
                                             subtitle: Text(
                                                 doc['time'].substring(0, 16)),
                                           ),
@@ -348,17 +351,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                               if (userSnapshot
                                                       .connectionState ==
                                                   ConnectionState.waiting) {
-                                                return CircularProgressIndicator();
+                                                return const CircularProgressIndicator();
                                               } else if (userSnapshot.hasData) {
                                                 String username = userSnapshot
                                                     .data!['username'];
-                                                int thumbs_up = userSnapshot
+                                                int thumbsUp = userSnapshot
                                                     .data!['thumbsUp'];
-                                                int thumbs_down = userSnapshot
+                                                int thumbsDown = userSnapshot
                                                     .data!['thumbsDown'];
                                                 return ListTile(
                                                   title:
-                                                      Text('In gebruik door'),
+                                                      const Text('In gebruik door'),
                                                   subtitle: Column(
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment
@@ -367,13 +370,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       Text(username),
                                                       Row(
                                                         children: [
-                                                          Icon(Icons.thumb_up),
-                                                          Text(thumbs_up
+                                                          const Icon(Icons.thumb_up),
+                                                          Text(thumbsUp
                                                               .toString()),
-                                                          Text(" - "),
-                                                          Icon(
+                                                          const Text(" - "),
+                                                          const Icon(
                                                               Icons.thumb_down),
-                                                          Text(thumbs_down
+                                                          Text(thumbsDown
                                                               .toString()),
                                                         ],
                                                       ),
@@ -385,21 +388,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 return Text(
                                                     'Error: ${userSnapshot.error}');
                                               } else {
-                                                return Text('User not found');
+                                                return const Text('User not found');
                                               }
                                             },
                                           ),
                                         ),
                                         Card(
                                           child: ListTile(
-                                            title: Text('Merk auto'),
+                                            title: const Text('Merk auto'),
                                             subtitle:
                                                 Text("${car.merk} ${car.type}"),
                                           ),
                                         ),
                                         Card(
                                           child: ListTile(
-                                            title: Text('Kleur auto'),
+                                            title: const Text('Kleur auto'),
                                             subtitle: Text(car.kleur),
                                           ),
                                         ),
@@ -413,8 +416,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 builder:
                                                     (BuildContext context) {
                                                   return AlertDialog(
-                                                    title: Text('Reserveren'),
-                                                    content: Text(
+                                                    title: const Text('Reserveren'),
+                                                    content: const Text(
                                                         'Weet u zeker dat u deze parkeerplaats wilt reserveren?'),
                                                     actions: <Widget>[
                                                       TextButton(
@@ -439,14 +442,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                   (BuildContext
                                                                       context) {
                                                                 return AlertDialog(
-                                                                  title: Text(
+                                                                  title: const Text(
                                                                       'Error'),
-                                                                  content: Text(
+                                                                  content: const Text(
                                                                       'Log in voor je een parkeerplaats kan reserveren'),
                                                                   actions: <
                                                                       Widget>[
                                                                     TextButton(
-                                                                      child: Text(
+                                                                      child: const Text(
                                                                           'Ok'),
                                                                       onPressed:
                                                                           () =>
@@ -501,7 +504,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 },
                                               );
                                             },
-                                            child: Text('Reserveer'),
+                                            child: const Text('Reserveer'),
                                           ),
                                         ),
                                       ],
@@ -509,7 +512,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   } else if (snapshot.hasError) {
                                     return Text('Error: ${snapshot.error}');
                                   } else {
-                                    return LinearProgressIndicator();
+                                    return const LinearProgressIndicator();
                                   }
                                 },
                               ),
@@ -544,7 +547,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       children: [
                                         Card(
                                           child: ListTile(
-                                            title: Text('In gebruik tot'),
+                                            title: const Text('In gebruik tot'),
                                             subtitle: Text(
                                                 doc['time'].substring(0, 16)),
                                           ),
@@ -562,17 +565,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                               if (userSnapshot
                                                       .connectionState ==
                                                   ConnectionState.waiting) {
-                                                return CircularProgressIndicator();
+                                                return const CircularProgressIndicator();
                                               } else if (userSnapshot.hasData) {
                                                 String username = userSnapshot
                                                     .data!['username'];
-                                                int thumbs_up = userSnapshot
+                                                int thumbsUp = userSnapshot
                                                     .data!['thumbsUp'];
-                                                int thumbs_down = userSnapshot
+                                                int thumbsDown = userSnapshot
                                                     .data!['thumbsDown'];
                                                 return ListTile(
                                                   title:
-                                                      Text('In gebruik door'),
+                                                      const Text('In gebruik door'),
                                                   subtitle: Column(
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment
@@ -581,13 +584,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       Text(username),
                                                       Row(
                                                         children: [
-                                                          Icon(Icons.thumb_up),
-                                                          Text(thumbs_up
+                                                          const Icon(Icons.thumb_up),
+                                                          Text(thumbsUp
                                                               .toString()),
-                                                          Text(" - "),
-                                                          Icon(
+                                                          const Text(" - "),
+                                                          const Icon(
                                                               Icons.thumb_down),
-                                                          Text(thumbs_down
+                                                          Text(thumbsDown
                                                               .toString()),
                                                         ],
                                                       ),
@@ -599,21 +602,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 return Text(
                                                     'Error: ${userSnapshot.error}');
                                               } else {
-                                                return Text('User not found');
+                                                return const Text('User not found');
                                               }
                                             },
                                           ),
                                         ),
                                         Card(
                                           child: ListTile(
-                                            title: Text('Merk auto'),
+                                            title: const Text('Merk auto'),
                                             subtitle:
                                                 Text("${car.merk} ${car.type}"),
                                           ),
                                         ),
                                         Card(
                                           child: ListTile(
-                                            title: Text('Kleur auto'),
+                                            title: const Text('Kleur auto'),
                                             subtitle: Text(car.kleur),
                                           ),
                                         ),
@@ -631,8 +634,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     (BuildContext context) {
                                                   return AlertDialog(
                                                     title:
-                                                        Text('Tijd verlengen'),
-                                                    content: Text(
+                                                        const Text('Tijd verlengen'),
+                                                    content: const Text(
                                                         'Tot hoe laat wilt u de parkeerplaats verlengen?'),
                                                     actions: <Widget>[
                                                       TextFormField(
@@ -644,7 +647,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                               'Selecteer de tijd',
                                                           suffixIcon:
                                                               IconButton(
-                                                            icon: Icon(
+                                                            icon: const Icon(
                                                                 Icons.timer),
                                                             onPressed: () {
                                                               DatePicker
@@ -728,7 +731,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 },
                                               );
                                             },
-                                            child: Text('tijd verlengen'),
+                                            child: const Text('tijd verlengen'),
                                           ),
                                         ),
                                       ],
@@ -736,7 +739,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   } else if (snapshot.hasError) {
                                     return Text('Error: ${snapshot.error}');
                                   } else {
-                                    return LinearProgressIndicator();
+                                    return const LinearProgressIndicator();
                                   }
                                 },
                               ),
@@ -770,7 +773,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       children: [
                                         Card(
                                           child: ListTile(
-                                            title: Text('In gebruik tot'),
+                                            title: const Text('In gebruik tot'),
                                             subtitle: Text(
                                                 doc['time'].substring(0, 16)),
                                           ),
@@ -788,17 +791,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                               if (userSnapshot
                                                       .connectionState ==
                                                   ConnectionState.waiting) {
-                                                return CircularProgressIndicator();
+                                                return const CircularProgressIndicator();
                                               } else if (userSnapshot.hasData) {
                                                 String username = userSnapshot
                                                     .data!['username'];
-                                                int thumbs_up = userSnapshot
+                                                int thumbsUp = userSnapshot
                                                     .data!['thumbsUp'];
-                                                int thumbs_down = userSnapshot
+                                                int thumbsDown = userSnapshot
                                                     .data!['thumbsDown'];
                                                 return ListTile(
                                                   title:
-                                                      Text('In gebruik door'),
+                                                      const Text('In gebruik door'),
                                                   subtitle: Column(
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment
@@ -807,13 +810,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       Text(username),
                                                       Row(
                                                         children: [
-                                                          Icon(Icons.thumb_up),
-                                                          Text(thumbs_up
+                                                          const Icon(Icons.thumb_up),
+                                                          Text(thumbsUp
                                                               .toString()),
-                                                          Text(" - "),
-                                                          Icon(
+                                                          const Text(" - "),
+                                                          const Icon(
                                                               Icons.thumb_down),
-                                                          Text(thumbs_down
+                                                          Text(thumbsDown
                                                               .toString()),
                                                         ],
                                                       ),
@@ -825,21 +828,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 return Text(
                                                     'Error: ${userSnapshot.error}');
                                               } else {
-                                                return Text('User not found');
+                                                return const Text('User not found');
                                               }
                                             },
                                           ),
                                         ),
                                         Card(
                                           child: ListTile(
-                                            title: Text('Merk auto'),
+                                            title: const Text('Merk auto'),
                                             subtitle:
                                                 Text("${car.merk} ${car.type}"),
                                           ),
                                         ),
                                         Card(
                                           child: ListTile(
-                                            title: Text('Kleur auto'),
+                                            title: const Text('Kleur auto'),
                                             subtitle: Text(car.kleur),
                                           ),
                                         ),
@@ -852,9 +855,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 builder:
                                                     (BuildContext context) {
                                                   return AlertDialog(
-                                                    title: Text(
+                                                    title: const Text(
                                                         'cancel reservation'),
-                                                    content: Text(
+                                                    content: const Text(
                                                         'Weet u zeker dat u deze reservatie wilt cancelen?'),
                                                     actions: <Widget>[
                                                       TextButton(
@@ -910,7 +913,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               );
                                             },
                                             child:
-                                                Text('Reserveering cancelen'),
+                                                const Text('Reserveering cancelen'),
                                           ),
                                         ),
                                       ],
@@ -918,7 +921,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   } else if (snapshot.hasError) {
                                     return Text('Error: ${snapshot.error}');
                                   } else {
-                                    return LinearProgressIndicator();
+                                    return const LinearProgressIndicator();
                                   }
                                 },
                               ),
@@ -1018,16 +1021,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Set<Marker> _markers = {};
-  LatLng _markerLocation = LatLng(0, 0);
+  final Set<Marker> _markers = {};
 
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder<LocationData?>(
         future: _currentLocation(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            _markerLocation =
-                LatLng(snapshot.data!.latitude!, snapshot.data!.longitude!);
             return Scaffold(
               appBar: AppBar(
                 title: const Text("ParkU"),
@@ -1108,7 +1109,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         },
                         tooltip: 'Voeg een nieuwe marker toe',
-                        child: Icon(Icons.add),
+                        child: const Icon(Icons.add),
                       ),
                     ),
                   ],
@@ -1134,7 +1135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => ProfilePage()),
+                                builder: (context) => const ProfilePage()),
                           );
                         } else {
                           // User is not logged in, navigate to login page

@@ -207,6 +207,8 @@ class _SignupPageState extends State<SignupPage> {
                     'username': username,
                     'email': email,
                     'password': hashedPassword,
+                    'thumbsUp': 0,
+                    'thumbsDown': 0,
                   });
 
                   // navigate to the next screen

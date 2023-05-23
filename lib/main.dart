@@ -267,8 +267,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void getMarkers() {
     FirebaseFirestore.instance.collection('markers').get().then((QuerySnapshot
-            querySnapshot) =>
+            querySnapshot)
         {
+    if (!mounted) {
+        return; // Check if the widget is still mounted before updating the state
+        }
           querySnapshot.docs.forEach((doc) {
             _markers.add(Marker(
               width: 80.0,
@@ -276,8 +279,10 @@ class _HomeScreenState extends State<HomeScreen> {
               point: LatLng(doc['lat'], doc['lng']),
               builder: (ctx) => GestureDetector(
                 onTap: () async {
-                  // if the time is before the time the marker is reserved till
 
+                  //if the user is logged in
+                  if (st.loggedInUser != null)
+                  {
                   if (doc['status'] == 'in_use') {
                     showDialog(
                       context: context,
@@ -575,7 +580,28 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     );
                   }
-                },
+                }else{
+                    //tell user to login first
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Parkeerplaats'),
+                          content: const Text(
+                              'Log in voor je een parkeerplaats kan selecteren'),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Sluiten'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                  },
                 child: Icon(
                   doc['status'] == 'reserved'
                       ? Icons.location_on
@@ -590,7 +616,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ));
-          })
+          });
         });
   }
 

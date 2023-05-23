@@ -1032,7 +1032,16 @@ class _HomeScreenState extends State<HomeScreen> {
             return Scaffold(
               appBar: AppBar(
                 title: const Text("ParkU"),
+                leading: IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    setState(() {
+                      getMarkers();
+                    });
+                  },
+                ),
               ),
+
               body: Center(
                 child: Stack(
                   children: <Widget>[

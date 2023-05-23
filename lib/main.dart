@@ -652,54 +652,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       TextButton(
                                                         onPressed: () async {
                                                           //if logedin user is null show a dialog that they need to login
-                                                          if (loggedInUser ==
-                                                              '') {
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop();
-                                                            showDialog(
-                                                              context: context,
-                                                              builder:
-                                                                  (BuildContext
-                                                                      context) {
-                                                                return AlertDialog(
-                                                                  title: Text(
-                                                                      'Error'),
-                                                                  content: Text(
-                                                                      'Log in voor je een parkeerplaats kan reserveren'),
-                                                                  actions: <
-                                                                      Widget>[
-                                                                    TextButton(
-                                                                      child: Text(
-                                                                          'Ok'),
-                                                                      onPressed:
-                                                                          () =>
-                                                                              Navigator.of(context).pop(),
-                                                                    ),
-                                                                  ],
-                                                                );
-                                                              },
-                                                            );
-                                                          } else {
-                                                            // Update the marker in the database
-                                                            FirebaseFirestore
-                                                                .instance
-                                                                .collection(
-                                                                    'markers')
-                                                                .doc(doc.id)
-                                                                .update({
-                                                              'status':
-                                                                  'reserved',
-                                                              'reserved':
-                                                                  await getUserId(),
-                                                            });
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop();
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop();
-                                                          }
+
+                                                          // Update the marker in the database
+                                                          FirebaseFirestore
+                                                              .instance
+                                                              .collection(
+                                                                  'markers')
+                                                              .doc(doc.id)
+                                                              .update({
+                                                            'time': selectedTime
+                                                                .toString(),
+                                                          });
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                          Navigator.of(context)
+                                                              .pop();
+
                                                           if (!mounted) {
                                                             return; // Check if the widget is still mounted before updating the state
                                                           }

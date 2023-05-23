@@ -430,26 +430,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         if (mounted) {
                                                           // Check if the widget is still mounted before updating the state
                                                           // Reload the page
-                                                          Navigator
-                                                              .pushReplacement(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                              builder: (BuildContext
-                                                                      context) =>
-                                                                  HomeScreen(),
-                                                            ),
-                                                          ).then((_) {
-                                                            // Trigger a refresh after returning from the HomeScreen
-                                                            // Call the necessary methods to refresh data if required
-                                                            //wait 2 seconds to make sure the database is updated
-                                                            Future.delayed(
-                                                                const Duration(
-                                                                    seconds: 2),
-                                                                () {
+                                                          //wait 2 seconds to make sure the database is updated
+                                                          Future.delayed(
+                                                              const Duration(
+                                                                  seconds: 2),
+                                                              () {
+                                                            setState(() {
                                                               getMarkers();
-                                                              // Any other necessary refresh logic
                                                             });
-
                                                             // Any other necessary refresh logic
                                                           });
                                                         }

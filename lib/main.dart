@@ -441,7 +441,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           ).then((_) {
                                                             // Trigger a refresh after returning from the HomeScreen
                                                             // Call the necessary methods to refresh data if required
-                                                            getMarkers();
+                                                            //wait 2 seconds to make sure the database is updated
+                                                            Future.delayed(
+                                                                const Duration(
+                                                                    seconds: 2),
+                                                                () {
+                                                              getMarkers();
+                                                              // Any other necessary refresh logic
+                                                            });
+
                                                             // Any other necessary refresh logic
                                                           });
                                                         }

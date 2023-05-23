@@ -361,8 +361,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             .start,
                                                     children: [
                                                       Text(username),
-                                                      const Text(
-                                                          'Rating: 4.5/5'),
+                                                      Row(
+                                                        children: [
+                                                          Icon(Icons.thumb_up),
+                                                          Icon(
+                                                              Icons.thumb_down),
+                                                        ],
+                                                      )
                                                     ],
                                                   ),
                                                 );
@@ -552,6 +557,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                               } else if (userSnapshot.hasData) {
                                                 String username = userSnapshot
                                                     .data!['username'];
+                                                int thumbs_up = userSnapshot
+                                                    .data!['thumbsUp'];
+                                                int thumbs_down = userSnapshot
+                                                    .data!['thumbsDown'];
                                                 return ListTile(
                                                   title:
                                                       Text('In gebruik door'),
@@ -561,8 +570,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             .start,
                                                     children: [
                                                       Text(username),
-                                                      const Text(
-                                                          'Rating: 4.5/5'),
+                                                      Row(
+                                                        children: [
+                                                          Icon(Icons.thumb_up),
+                                                          Text(thumbs_up
+                                                              .toString()),
+                                                          Text(" - "),
+                                                          Icon(
+                                                              Icons.thumb_down),
+                                                          Text(thumbs_down
+                                                              .toString()),
+                                                        ],
+                                                      ),
                                                     ],
                                                   ),
                                                 );
@@ -603,9 +622,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     (BuildContext context) {
                                                   return AlertDialog(
                                                     title:
-                                                        Text('tijd verlengen'),
+                                                        Text('Tijd verlengen'),
                                                     content: Text(
-                                                        'tot hoe laat wilt u de parkeerplaats verlengen?'),
+                                                        'Tot hoe laat wilt u de parkeerplaats verlengen?'),
                                                     actions: <Widget>[
                                                       TextFormField(
                                                         controller:
@@ -639,55 +658,62 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           ),
                                                         ),
                                                       ),
-                                                      TextButton(
-                                                        onPressed: () {
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                        child: const Text(
-                                                            'annuleren'),
-                                                      ),
-                                                      //time picker
+                                                      Row(children: [
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          },
+                                                          child: const Text(
+                                                              'annuleren'),
+                                                        ),
+                                                        //time picker
 
-                                                      TextButton(
-                                                        onPressed: () async {
-                                                          //if logedin user is null show a dialog that they need to login
+                                                        TextButton(
+                                                          onPressed: () async {
+                                                            //if logedin user is null show a dialog that they need to login
 
-                                                          // Update the marker in the database
-                                                          FirebaseFirestore
-                                                              .instance
-                                                              .collection(
-                                                                  'markers')
-                                                              .doc(doc.id)
-                                                              .update({
-                                                            'time': selectedTime
-                                                                .toString(),
-                                                          });
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                          Navigator.of(context)
-                                                              .pop();
-
-                                                          if (!mounted) {
-                                                            return; // Check if the widget is still mounted before updating the state
-                                                          }
-                                                          if (mounted) {
-                                                            // Check if the widget is still mounted before updating the state
-                                                            // Reload the page
-                                                            //wait 2 seconds to make sure the database is updated
-                                                            Future.delayed(
-                                                                const Duration(
-                                                                    seconds: 2),
-                                                                () {
-                                                              setState(() {
-                                                                getMarkers();
-                                                              });
-                                                              // Any other necessary refresh logic
+                                                            // Update the marker in the database
+                                                            FirebaseFirestore
+                                                                .instance
+                                                                .collection(
+                                                                    'markers')
+                                                                .doc(doc.id)
+                                                                .update({
+                                                              'time': selectedTime
+                                                                  .toString(),
                                                             });
-                                                          }
-                                                        },
-                                                        child: const Text('Ja'),
-                                                      ),
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+
+                                                            if (!mounted) {
+                                                              return; // Check if the widget is still mounted before updating the state
+                                                            }
+                                                            if (mounted) {
+                                                              // Check if the widget is still mounted before updating the state
+                                                              // Reload the page
+                                                              //wait 2 seconds to make sure the database is updated
+                                                              Future.delayed(
+                                                                  const Duration(
+                                                                      seconds:
+                                                                          2),
+                                                                  () {
+                                                                setState(() {
+                                                                  getMarkers();
+                                                                });
+                                                                // Any other necessary refresh logic
+                                                              });
+                                                            }
+                                                          },
+                                                          child:
+                                                              const Text('Ja'),
+                                                        )
+                                                      ]),
                                                     ],
                                                   );
                                                 },
@@ -757,6 +783,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                               } else if (userSnapshot.hasData) {
                                                 String username = userSnapshot
                                                     .data!['username'];
+                                                int thumbs_up = userSnapshot
+                                                    .data!['thumbsUp'];
+                                                int thumbs_down = userSnapshot
+                                                    .data!['thumbsDown'];
                                                 return ListTile(
                                                   title:
                                                       Text('In gebruik door'),
@@ -766,8 +796,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             .start,
                                                     children: [
                                                       Text(username),
-                                                      const Text(
-                                                          'Rating: 4.5/5'),
+                                                      Row(
+                                                        children: [
+                                                          Icon(Icons.thumb_up),
+                                                          Text(thumbs_up
+                                                              .toString()),
+                                                          Icon(
+                                                              Icons.thumb_down),
+                                                          Text(thumbs_down
+                                                              .toString()),
+                                                        ],
+                                                      ),
                                                     ],
                                                   ),
                                                 );

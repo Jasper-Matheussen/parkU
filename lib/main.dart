@@ -843,7 +843,76 @@ class _HomeScreenState extends State<HomeScreen> {
                                             subtitle: Text(car.kleur),
                                           ),
                                         ),
-                                        //add button to reserve the marker and center the button
+                                        //add button to cancel the reservation and center the button
+                                        Center(
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: Text(
+                                                        'cancel reservation'),
+                                                    content: Text(
+                                                        'Weet u zeker dat u deze reservatie wilt cancelen?'),
+                                                    actions: <Widget>[
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                        child:
+                                                            const Text('Nee'),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () async {
+                                                          //if logedin user is null show a dialog that they need to login
+
+                                                          // Update the marker in the database
+                                                          FirebaseFirestore
+                                                              .instance
+                                                              .collection(
+                                                                  'markers')
+                                                              .doc(doc.id)
+                                                              .update({
+                                                            'status': 'in_use',
+                                                            'reserved': '',
+                                                          });
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                          Navigator.of(context)
+                                                              .pop();
+
+                                                          if (!mounted) {
+                                                            return; // Check if the widget is still mounted before updating the state
+                                                          }
+                                                          if (mounted) {
+                                                            // Check if the widget is still mounted before updating the state
+                                                            // Reload the page
+                                                            //wait 2 seconds to make sure the database is updated
+                                                            Future.delayed(
+                                                                const Duration(
+                                                                    seconds: 2),
+                                                                () {
+                                                              setState(() {
+                                                                getMarkers();
+                                                              });
+                                                              // Any other necessary refresh logic
+                                                            });
+                                                          }
+                                                        },
+                                                        child: const Text('Ja'),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            },
+                                            child:
+                                                Text('Reserveering cancelen'),
+                                          ),
+                                        ),
                                       ],
                                     );
                                   } else if (snapshot.hasError) {

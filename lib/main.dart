@@ -292,305 +292,591 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _markers.clear();
         querySnapshot.docs.forEach((doc) {
-          _markers.add(
-            Marker(
-              width: 80.0,
-              height: 80.0,
-              point: LatLng(doc['lat'], doc['lng']),
-              builder: (ctx) => GestureDetector(
-                onTap: () async {
-                  //if the user is logged in
-                  if (st.loggedInUser != null) {
-                    if (doc['status'] == 'in_use') {
+          //if time is in the past set status to unavailable
+          if (DateTime.parse(doc['time']).isBefore(DateTime.now())) {
+            FirebaseFirestore.instance
+                .collection('markers')
+                .doc(doc.id)
+                .update({
+              'status': 'unavailable',
+            });
+          } else {
+            _markers.add(
+              Marker(
+                width: 80.0,
+                height: 80.0,
+                point: LatLng(doc['lat'], doc['lng']),
+                builder: (ctx) => GestureDetector(
+                  onTap: () async {
+                    //if the user is logged in
+                    if (st.loggedInUser != null) {
+                      if (doc['status'] == 'in_use' &&
+                          doc['user'] != await getUserId()) {
+                        showDialog(
+                          context: this.context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Parkeerplaats'),
+                              content: FutureBuilder<Car>(
+                                future: getCar(doc),
+                                builder: (BuildContext context,
+                                    AsyncSnapshot<Car> snapshot) {
+                                  if (snapshot.hasData) {
+                                    Car car = snapshot.data!;
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Card(
+                                          child: ListTile(
+                                            title: Text('In gebruik tot'),
+                                            subtitle: Text(
+                                                doc['time'].substring(0, 16)),
+                                          ),
+                                        ),
+                                        Card(
+                                          child:
+                                              FutureBuilder<DocumentSnapshot>(
+                                            future: FirebaseFirestore.instance
+                                                .collection('users')
+                                                .doc(doc['user'])
+                                                .get(),
+                                            builder: (BuildContext context,
+                                                AsyncSnapshot<DocumentSnapshot>
+                                                    userSnapshot) {
+                                              if (userSnapshot
+                                                      .connectionState ==
+                                                  ConnectionState.waiting) {
+                                                return CircularProgressIndicator();
+                                              } else if (userSnapshot.hasData) {
+                                                String username = userSnapshot
+                                                    .data!['username'];
+                                                return ListTile(
+                                                  title:
+                                                      Text('In gebruik door'),
+                                                  subtitle: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(username),
+                                                      const Text(
+                                                          'Rating: 4.5/5'),
+                                                    ],
+                                                  ),
+                                                );
+                                              } else if (userSnapshot
+                                                  .hasError) {
+                                                return Text(
+                                                    'Error: ${userSnapshot.error}');
+                                              } else {
+                                                return Text('User not found');
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                        Card(
+                                          child: ListTile(
+                                            title: Text('Merk auto'),
+                                            subtitle:
+                                                Text("${car.merk} ${car.type}"),
+                                          ),
+                                        ),
+                                        Card(
+                                          child: ListTile(
+                                            title: Text('Kleur auto'),
+                                            subtitle: Text(car.kleur),
+                                          ),
+                                        ),
+                                        //add button to reserve the marker and center the button
+
+                                        Center(
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: Text('Reserveren'),
+                                                    content: Text(
+                                                        'Weet u zeker dat u deze parkeerplaats wilt reserveren?'),
+                                                    actions: <Widget>[
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                        child:
+                                                            const Text('Nee'),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () async {
+                                                          //if logedin user is null show a dialog that they need to login
+                                                          if (loggedInUser ==
+                                                              '') {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                            showDialog(
+                                                              context: context,
+                                                              builder:
+                                                                  (BuildContext
+                                                                      context) {
+                                                                return AlertDialog(
+                                                                  title: Text(
+                                                                      'Error'),
+                                                                  content: Text(
+                                                                      'Log in voor je een parkeerplaats kan reserveren'),
+                                                                  actions: <
+                                                                      Widget>[
+                                                                    TextButton(
+                                                                      child: Text(
+                                                                          'Ok'),
+                                                                      onPressed:
+                                                                          () =>
+                                                                              Navigator.of(context).pop(),
+                                                                    ),
+                                                                  ],
+                                                                );
+                                                              },
+                                                            );
+                                                          } else {
+                                                            // Update the marker in the database
+                                                            FirebaseFirestore
+                                                                .instance
+                                                                .collection(
+                                                                    'markers')
+                                                                .doc(doc.id)
+                                                                .update({
+                                                              'status':
+                                                                  'reserved',
+                                                              'reserved':
+                                                                  await getUserId(),
+                                                            });
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          }
+                                                          if (!mounted) {
+                                                            return; // Check if the widget is still mounted before updating the state
+                                                          }
+                                                          if (mounted) {
+                                                            // Check if the widget is still mounted before updating the state
+                                                            // Reload the page
+                                                            //wait 2 seconds to make sure the database is updated
+                                                            Future.delayed(
+                                                                const Duration(
+                                                                    seconds: 2),
+                                                                () {
+                                                              setState(() {
+                                                                getMarkers();
+                                                              });
+                                                              // Any other necessary refresh logic
+                                                            });
+                                                          }
+                                                        },
+                                                        child: const Text('Ja'),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            },
+                                            child: Text('Reserveer'),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    return Text('Error: ${snapshot.error}');
+                                  } else {
+                                    return LinearProgressIndicator();
+                                  }
+                                },
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('Sluiten'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      } else if (doc['status'] == 'in_use' &&
+                          doc['user'] == await getUserId()) {
+                        showDialog(
+                          context: this.context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Parkeerplaats'),
+                              content: FutureBuilder<Car>(
+                                future: getCar(doc),
+                                builder: (BuildContext context,
+                                    AsyncSnapshot<Car> snapshot) {
+                                  if (snapshot.hasData) {
+                                    Car car = snapshot.data!;
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Card(
+                                          child: ListTile(
+                                            title: Text('In gebruik tot'),
+                                            subtitle: Text(
+                                                doc['time'].substring(0, 16)),
+                                          ),
+                                        ),
+                                        Card(
+                                          child:
+                                              FutureBuilder<DocumentSnapshot>(
+                                            future: FirebaseFirestore.instance
+                                                .collection('users')
+                                                .doc(doc['user'])
+                                                .get(),
+                                            builder: (BuildContext context,
+                                                AsyncSnapshot<DocumentSnapshot>
+                                                    userSnapshot) {
+                                              if (userSnapshot
+                                                      .connectionState ==
+                                                  ConnectionState.waiting) {
+                                                return CircularProgressIndicator();
+                                              } else if (userSnapshot.hasData) {
+                                                String username = userSnapshot
+                                                    .data!['username'];
+                                                return ListTile(
+                                                  title:
+                                                      Text('In gebruik door'),
+                                                  subtitle: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(username),
+                                                      const Text(
+                                                          'Rating: 4.5/5'),
+                                                    ],
+                                                  ),
+                                                );
+                                              } else if (userSnapshot
+                                                  .hasError) {
+                                                return Text(
+                                                    'Error: ${userSnapshot.error}');
+                                              } else {
+                                                return Text('User not found');
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                        Card(
+                                          child: ListTile(
+                                            title: Text('Merk auto'),
+                                            subtitle:
+                                                Text("${car.merk} ${car.type}"),
+                                          ),
+                                        ),
+                                        Card(
+                                          child: ListTile(
+                                            title: Text('Kleur auto'),
+                                            subtitle: Text(car.kleur),
+                                          ),
+                                        ),
+                                        //add button to reserve the marker and center the button
+
+                                        Center(
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              TextEditingController
+                                                  timeController =
+                                                  TextEditingController();
+                                              showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title:
+                                                        Text('tijd verlengen'),
+                                                    content: Text(
+                                                        'tot hoe laat wilt u de parkeerplaats verlengen?'),
+                                                    actions: <Widget>[
+                                                      TextFormField(
+                                                        controller:
+                                                            timeController,
+                                                        decoration:
+                                                            InputDecoration(
+                                                          labelText:
+                                                              'Selecteer de tijd',
+                                                          suffixIcon:
+                                                              IconButton(
+                                                            icon: Icon(
+                                                                Icons.timer),
+                                                            onPressed: () {
+                                                              DatePicker
+                                                                  .showTimePicker(
+                                                                context,
+                                                                showSecondsColumn:
+                                                                    false,
+                                                                onConfirm:
+                                                                    (time) {
+                                                                  selectedTime =
+                                                                      time;
+                                                                  timeController
+                                                                      .text = DateFormat
+                                                                          .Hm()
+                                                                      .format(
+                                                                          time); // Use DateFormat to format the time
+                                                                },
+                                                              );
+                                                            },
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                        child: const Text(
+                                                            'annuleren'),
+                                                      ),
+                                                      //time picker
+
+                                                      TextButton(
+                                                        onPressed: () async {
+                                                          //if logedin user is null show a dialog that they need to login
+                                                          if (loggedInUser ==
+                                                              '') {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                            showDialog(
+                                                              context: context,
+                                                              builder:
+                                                                  (BuildContext
+                                                                      context) {
+                                                                return AlertDialog(
+                                                                  title: Text(
+                                                                      'Error'),
+                                                                  content: Text(
+                                                                      'Log in voor je een parkeerplaats kan reserveren'),
+                                                                  actions: <
+                                                                      Widget>[
+                                                                    TextButton(
+                                                                      child: Text(
+                                                                          'Ok'),
+                                                                      onPressed:
+                                                                          () =>
+                                                                              Navigator.of(context).pop(),
+                                                                    ),
+                                                                  ],
+                                                                );
+                                                              },
+                                                            );
+                                                          } else {
+                                                            // Update the marker in the database
+                                                            FirebaseFirestore
+                                                                .instance
+                                                                .collection(
+                                                                    'markers')
+                                                                .doc(doc.id)
+                                                                .update({
+                                                              'status':
+                                                                  'reserved',
+                                                              'reserved':
+                                                                  await getUserId(),
+                                                            });
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          }
+                                                          if (!mounted) {
+                                                            return; // Check if the widget is still mounted before updating the state
+                                                          }
+                                                          if (mounted) {
+                                                            // Check if the widget is still mounted before updating the state
+                                                            // Reload the page
+                                                            //wait 2 seconds to make sure the database is updated
+                                                            Future.delayed(
+                                                                const Duration(
+                                                                    seconds: 2),
+                                                                () {
+                                                              setState(() {
+                                                                getMarkers();
+                                                              });
+                                                              // Any other necessary refresh logic
+                                                            });
+                                                          }
+                                                        },
+                                                        child: const Text('Ja'),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            },
+                                            child: Text('tijd verlengen'),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    return Text('Error: ${snapshot.error}');
+                                  } else {
+                                    return LinearProgressIndicator();
+                                  }
+                                },
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('Sluiten'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      } else if (doc['reserved'] == await getUserId()) {
+                        showDialog(
+                          context: this.context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Parkeerplaats'),
+                              content: FutureBuilder<Car>(
+                                future: getCar(doc),
+                                builder: (BuildContext context,
+                                    AsyncSnapshot<Car> snapshot) {
+                                  if (snapshot.hasData) {
+                                    Car car = snapshot.data!;
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Card(
+                                          child: ListTile(
+                                            title: Text('In gebruik tot'),
+                                            subtitle: Text(
+                                                doc['time'].substring(0, 16)),
+                                          ),
+                                        ),
+                                        Card(
+                                          child:
+                                              FutureBuilder<DocumentSnapshot>(
+                                            future: FirebaseFirestore.instance
+                                                .collection('users')
+                                                .doc(doc['user'])
+                                                .get(),
+                                            builder: (BuildContext context,
+                                                AsyncSnapshot<DocumentSnapshot>
+                                                    userSnapshot) {
+                                              if (userSnapshot
+                                                      .connectionState ==
+                                                  ConnectionState.waiting) {
+                                                return CircularProgressIndicator();
+                                              } else if (userSnapshot.hasData) {
+                                                String username = userSnapshot
+                                                    .data!['username'];
+                                                return ListTile(
+                                                  title:
+                                                      Text('In gebruik door'),
+                                                  subtitle: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(username),
+                                                      const Text(
+                                                          'Rating: 4.5/5'),
+                                                    ],
+                                                  ),
+                                                );
+                                              } else if (userSnapshot
+                                                  .hasError) {
+                                                return Text(
+                                                    'Error: ${userSnapshot.error}');
+                                              } else {
+                                                return Text('User not found');
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                        Card(
+                                          child: ListTile(
+                                            title: Text('Merk auto'),
+                                            subtitle:
+                                                Text("${car.merk} ${car.type}"),
+                                          ),
+                                        ),
+                                        Card(
+                                          child: ListTile(
+                                            title: Text('Kleur auto'),
+                                            subtitle: Text(car.kleur),
+                                          ),
+                                        ),
+                                        //add button to reserve the marker and center the button
+                                      ],
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    return Text('Error: ${snapshot.error}');
+                                  } else {
+                                    return LinearProgressIndicator();
+                                  }
+                                },
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('Sluiten'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      } else {
+                        //tell user the parking is reserved
+                        showDialog(
+                          context: this.context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Parkeerplaats'),
+                              content: const Text(
+                                  'Deze parkeerplaats is al gereserveerd'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('Sluiten'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    } else {
+                      //tell user to login first
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
                             title: const Text('Parkeerplaats'),
-                            content: FutureBuilder<Car>(
-                              future: getCar(doc),
-                              builder: (BuildContext context,
-                                  AsyncSnapshot<Car> snapshot) {
-                                if (snapshot.hasData) {
-                                  Car car = snapshot.data!;
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Card(
-                                        child: ListTile(
-                                          title: Text('In gebruik tot'),
-                                          subtitle: Text(
-                                              doc['time'].substring(0, 16)),
-                                        ),
-                                      ),
-                                      Card(
-                                        child: FutureBuilder<DocumentSnapshot>(
-                                          future: FirebaseFirestore.instance
-                                              .collection('users')
-                                              .doc(doc['user'])
-                                              .get(),
-                                          builder: (BuildContext context,
-                                              AsyncSnapshot<DocumentSnapshot>
-                                                  userSnapshot) {
-                                            if (userSnapshot.connectionState ==
-                                                ConnectionState.waiting) {
-                                              return CircularProgressIndicator();
-                                            } else if (userSnapshot.hasData) {
-                                              String username = userSnapshot
-                                                  .data!['username'];
-                                              return ListTile(
-                                                title: Text('In gebruik door'),
-                                                subtitle: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(username),
-                                                    const Text('Rating: 4.5/5'),
-                                                  ],
-                                                ),
-                                              );
-                                            } else if (userSnapshot.hasError) {
-                                              return Text(
-                                                  'Error: ${userSnapshot.error}');
-                                            } else {
-                                              return Text('User not found');
-                                            }
-                                          },
-                                        ),
-                                      ),
-                                      Card(
-                                        child: ListTile(
-                                          title: Text('Merk auto'),
-                                          subtitle:
-                                              Text("${car.merk} ${car.type}"),
-                                        ),
-                                      ),
-                                      Card(
-                                        child: ListTile(
-                                          title: Text('Kleur auto'),
-                                          subtitle: Text(car.kleur),
-                                        ),
-                                      ),
-                                      //add button to reserve the marker and center the button
-
-                                      Center(
-                                        child: ElevatedButton(
-                                          onPressed: () {
-                                            showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                return AlertDialog(
-                                                  title: Text('Reserveren'),
-                                                  content: Text(
-                                                      'Weet u zeker dat u deze parkeerplaats wilt reserveren?'),
-                                                  actions: <Widget>[
-                                                    TextButton(
-                                                      onPressed: () {
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                      child: const Text('Nee'),
-                                                    ),
-                                                    TextButton(
-                                                      onPressed: () async {
-                                                        //if logedin user is null show a dialog that they need to login
-                                                        if (loggedInUser ==
-                                                            '') {
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                          showDialog(
-                                                            context: context,
-                                                            builder:
-                                                                (BuildContext
-                                                                    context) {
-                                                              return AlertDialog(
-                                                                title: Text(
-                                                                    'Error'),
-                                                                content: Text(
-                                                                    'Log in voor je een parkeerplaats kan reserveren'),
-                                                                actions: <
-                                                                    Widget>[
-                                                                  TextButton(
-                                                                    child: Text(
-                                                                        'Ok'),
-                                                                    onPressed: () =>
-                                                                        Navigator.of(context)
-                                                                            .pop(),
-                                                                  ),
-                                                                ],
-                                                              );
-                                                            },
-                                                          );
-                                                        } else {
-                                                          // Update the marker in the database
-                                                          FirebaseFirestore
-                                                              .instance
-                                                              .collection(
-                                                                  'markers')
-                                                              .doc(doc.id)
-                                                              .update({
-                                                            'status':
-                                                                'reserved',
-                                                            'reserved':
-                                                                await getUserId(),
-                                                          });
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        }
-                                                        if (!mounted) {
-                                                          return; // Check if the widget is still mounted before updating the state
-                                                        }
-                                                        if (mounted) {
-                                                          // Check if the widget is still mounted before updating the state
-                                                          // Reload the page
-                                                          //wait 2 seconds to make sure the database is updated
-                                                          Future.delayed(
-                                                              const Duration(
-                                                                  seconds: 2),
-                                                              () {
-                                                            setState(() {
-                                                              getMarkers();
-                                                            });
-                                                            // Any other necessary refresh logic
-                                                          });
-                                                        }
-                                                      },
-                                                      child: const Text('Ja'),
-                                                    ),
-                                                  ],
-                                                );
-                                              },
-                                            );
-                                          },
-                                          child: Text('Reserveer'),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                } else if (snapshot.hasError) {
-                                  return Text('Error: ${snapshot.error}');
-                                } else {
-                                  return LinearProgressIndicator();
-                                }
-                              },
-                            ),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('Sluiten'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    } else if (doc['reserved'] == await getUserId()) {
-                      showDialog(
-                        context: this.context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Parkeerplaats'),
-                            content: FutureBuilder<Car>(
-                              future: getCar(doc),
-                              builder: (BuildContext context,
-                                  AsyncSnapshot<Car> snapshot) {
-                                if (snapshot.hasData) {
-                                  Car car = snapshot.data!;
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Card(
-                                        child: ListTile(
-                                          title: Text('In gebruik tot'),
-                                          subtitle: Text(
-                                              doc['time'].substring(0, 16)),
-                                        ),
-                                      ),
-                                      Card(
-                                        child: FutureBuilder<DocumentSnapshot>(
-                                          future: FirebaseFirestore.instance
-                                              .collection('users')
-                                              .doc(doc['user'])
-                                              .get(),
-                                          builder: (BuildContext context,
-                                              AsyncSnapshot<DocumentSnapshot>
-                                                  userSnapshot) {
-                                            if (userSnapshot.connectionState ==
-                                                ConnectionState.waiting) {
-                                              return CircularProgressIndicator();
-                                            } else if (userSnapshot.hasData) {
-                                              String username = userSnapshot
-                                                  .data!['username'];
-                                              return ListTile(
-                                                title: Text('In gebruik door'),
-                                                subtitle: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(username),
-                                                    const Text('Rating: 4.5/5'),
-                                                  ],
-                                                ),
-                                              );
-                                            } else if (userSnapshot.hasError) {
-                                              return Text(
-                                                  'Error: ${userSnapshot.error}');
-                                            } else {
-                                              return Text('User not found');
-                                            }
-                                          },
-                                        ),
-                                      ),
-                                      Card(
-                                        child: ListTile(
-                                          title: Text('Merk auto'),
-                                          subtitle:
-                                              Text("${car.merk} ${car.type}"),
-                                        ),
-                                      ),
-                                      Card(
-                                        child: ListTile(
-                                          title: Text('Kleur auto'),
-                                          subtitle: Text(car.kleur),
-                                        ),
-                                      ),
-                                      //add button to reserve the marker and center the button
-                                    ],
-                                  );
-                                } else if (snapshot.hasError) {
-                                  return Text('Error: ${snapshot.error}');
-                                } else {
-                                  return LinearProgressIndicator();
-                                }
-                              },
-                            ),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('Sluiten'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    } else {
-                      //tell user the parking is reserved
-                      showDialog(
-                        context: this.context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Parkeerplaats'),
                             content: const Text(
-                                'Deze parkeerplaats is al gereserveerd'),
+                                'Log in voor je een parkeerplaats kan selecteren'),
                             actions: <Widget>[
                               TextButton(
                                 onPressed: () {
@@ -603,43 +889,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       );
                     }
-                  } else {
-                    //tell user to login first
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Parkeerplaats'),
-                          content: const Text(
-                              'Log in voor je een parkeerplaats kan selecteren'),
-                          actions: <Widget>[
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('Sluiten'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  }
-                },
-                child: Icon(
-                  doc['status'] == 'reserved'
-                      ? Icons.location_on
-                      : doc['status'] == 'in_use'
-                          ? Icons.location_on
-                          : Icons.location_off,
-                  color: doc['status'] == 'in_use'
-                      ? Colors.blue
-                      : doc['status'] == 'reserved'
-                          ? Colors.red
-                          : Colors.grey,
+                  },
+                  child: Icon(
+                    doc['status'] == 'reserved'
+                        ? Icons.location_on
+                        : doc['status'] == 'in_use'
+                            ? Icons.location_on
+                            : Icons.location_off,
+                    color: doc['status'] == 'in_use'
+                        ? Colors.blue
+                        : doc['status'] == 'reserved'
+                            ? Colors.red
+                            : doc['status'] == 'reserved'
+                                ? Colors.red
+                                : Colors.grey,
+                  ),
                 ),
               ),
-            ),
-          );
+            );
+          }
         });
       });
     });

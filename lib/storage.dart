@@ -34,3 +34,11 @@ Future<void> deleteCarForUser(Car car) {
     userRef.collection('cars').doc(car.id).delete();
   });
 }
+
+//getUserNameById
+Future<String> getUserNameById(String id) async {
+  final usersRef = FirebaseFirestore.instance.collection('users');
+  final query = usersRef.where('id', isEqualTo: id);
+  //return the user name as string
+  return query.get().then((value) => value.docs.first['username']);
+}

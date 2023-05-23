@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'storage.dart' as st;
 import 'car.dart';
+import 'reserverdspots.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -32,7 +33,6 @@ class _ProfilePageState extends State<ProfilePage> {
     return _cars;
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,14 +41,28 @@ class _ProfilePageState extends State<ProfilePage> {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.star),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ReservedSpotsPage(),
+                ),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
               st.loggedInUser = null;
               Navigator.pop(context);
             },
-          ),],
-
+          ),
+          // Add a button to navigate to the reserved spots page
+        ],
       ),
+      // ...rest of the code remains unchanged
+
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
